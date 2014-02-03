@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Linear Regression</title>
+  <meta name="author" content="Dan">
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="/favicon.png" rel="icon">
+  <link href="/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+  <script src="/theme/js/modernizr-2.0.js"></script>
+  <script src="/theme/js/ender.js"></script>
+  <script src="/theme/js/octopress.js" type="text/javascript"></script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+  </script>
+
+  <script type="text/javascript"
+    src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
+
+
+  <link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="/">Test</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/" rel="subscribe-rss">RSS</a></li>
+</ul>
+
+<!-- TODO: add search here
+<form action="" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+-->
+
+<ul class="main-navigation">
+    <!-- TODO: add categories here? -->
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Linear Regression</h1>
+      <p class="meta"><time datetime="2014-03-01T00:00:00" pubdate>Sat 01 March 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>When I started college as a bright-eyed and bushy-tailed freshman, I remember walking into 5 different freshman math classes. All of them had the exact same lesson: Vectors. I was a little annoyed that my time was totally being wasted. Yes, I have seen vectors before. Yes, I know how to dot them together. Yes, I know they have magnitude and direction. A surprise was saved for the end of the lecture. Any guesses? Yup, matrices. And they wonder why we just show up for exams.</p>
+<blockquote>
+It is going to be different this time</blockquote>
+<p>I'm going to assume that you know what vectors are. I'm going to assume that you have been intimately close with a couple of matrices. I'm going to assume that you can take a <a class="reference external" href="http://en.wikipedia.org/wiki/Partial_derivative">partial derivative</a>. Let's not turn this into a snoozefest.</p>
+<div class="section" id="background">
+<h2>Background</h2>
+<p>I want you to assume for the sake of this blog, that you are trapped on an island. The rest of mankind has turned into zombies, and you have to recreate all of machine learning from scratch. Let's start with linear regression, and let's write the the algorithm using <a class="reference external" href="http://en.wikipedia.org/wiki/Gradient_descent">gradient descent</a> as our update rule. Note that gradient descent is the backbone for Logistic Regression, the Perceptron, and Neural Networks. So if you can't make it work with Linear Regressions, then you are in some real trouble when things get more complicated.</p>
+<p>Let's start with an example dataset. Here are some of the rows in the famous Boston House Value dataset.</p>
+<div class="section" id="data">
+<h3>Data</h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="3%" />
+<col width="7%" />
+<col width="6%" />
+<col width="7%" />
+<col width="7%" />
+<col width="6%" />
+<col width="9%" />
+<col width="4%" />
+<col width="4%" />
+<col width="10%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head" colspan="13">Inputs</th>
+<th class="head">Output</th>
+</tr>
+<tr><th class="head">CRIM</th>
+<th class="head">ZN</th>
+<th class="head">INDUS</th>
+<th class="head">CHAS</th>
+<th class="head">NOX</th>
+<th class="head">RM</th>
+<th class="head">AGE</th>
+<th class="head">DIS</th>
+<th class="head">RAD</th>
+<th class="head">TAX</th>
+<th class="head">PTRATIO</th>
+<th class="head">B</th>
+<th class="head">LSTAT</th>
+<th class="head">MEDV</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>0.00632</td>
+<td>18</td>
+<td>2.31</td>
+<td>0</td>
+<td>0.538</td>
+<td>6.575</td>
+<td>65.2</td>
+<td>4.0900</td>
+<td>1</td>
+<td>296</td>
+<td>15.3</td>
+<td>396.90</td>
+<td>4.98</td>
+<td>24.0</td>
+</tr>
+<tr><td>0.02731</td>
+<td>0</td>
+<td>7.07</td>
+<td>0</td>
+<td>0.469</td>
+<td>6.421</td>
+<td>78.9</td>
+<td>4.9671</td>
+<td>2</td>
+<td>242</td>
+<td>17.8</td>
+<td>396.90</td>
+<td>9.14</td>
+<td>21.6</td>
+</tr>
+<tr><td>0.02729</td>
+<td>0</td>
+<td>7.07</td>
+<td>0</td>
+<td>0.469</td>
+<td>7.185</td>
+<td>61.1</td>
+<td>4.9671</td>
+<td>2</td>
+<td>242</td>
+<td>17.8</td>
+<td>392.83</td>
+<td>4.03</td>
+<td>34.7</td>
+</tr>
+<tr><td>0.03237</td>
+<td>0</td>
+<td>2.18</td>
+<td>0</td>
+<td>0.458</td>
+<td>6.998</td>
+<td>45.8</td>
+<td>6.0622</td>
+<td>3</td>
+<td>222</td>
+<td>18.7</td>
+<td>394.63</td>
+<td>2.94</td>
+<td>33.4</td>
+</tr>
+<tr><td>0.06905</td>
+<td>0</td>
+<td>2.18</td>
+<td>0</td>
+<td>0.458</td>
+<td>7.147</td>
+<td>54.2</td>
+<td>6.0622</td>
+<td>3</td>
+<td>222</td>
+<td>18.7</td>
+<td>396.90</td>
+<td>5.33</td>
+<td>36.2</td>
+</tr>
+</tbody>
+</table>
+<p>In this dataset, we are trying to predict the median value of a house (&quot;MEDV&quot;) from other attributes of the house (&quot;AGE&quot;, etc..). But forget for a moment the precise meaning of all of the columns. Let's look at the bigger picture here. As we can see this dataset has 13 columns of inputs. Let's put them in a matrix and call it $X$. And then we have some output column &quot;MEDV&quot;. Let's throw that in a matrix $T$ (for 'da Truth). Now, in this example we only have one output that we are predicting, but in general, we can have many more. And we can predict them all together (you'll see how).</p>
+</div>
+</div>
+<div class="section" id="linear-models">
+<h2>Linear Models</h2>
+<p>In linear models, we are looking to predict our output (&quot;MEDV&quot; in this case), as a linear combination of our inputs, such that</p>
+<p>$$w_1*CRIM + ... w_{13}*LSTAT = Y$$</p>
+<p>$Y$ is close to $T$. It's easy to see that $Y$ is the output of our model. We can imagine taking our weights and putting them in a separate weight matrix $W$, such that the <strong>dot-product</strong> of $X$, and $W$ is $Y$. Pictorally, this looks like</p>
+<img alt="Linear Regression" src="theme/images/LinReg.png" />
+<p>Note that when I <a class="reference external" href="http://en.wikipedia.org/wiki/Matrix_multiplication">multiply</a> two matrices together, I picture the second matrix ($W$ in this case) up and to the right, because then the <strong>dot-product</strong> has a nice visual representation. It looks like this</p>
+<img alt="Matrix Multiplication" src="theme/images/matrix_mult.png" />
+<p>$$y_{ij} = X_{i\_} \cdot W_{\_j} = \sum_{k} x_{ik}*w_{kj}$$</p>
+<p>Here is a codepen, that <a class="reference external" href="http://codepen.io/dcrmls/pen/bmwnJ">illustrates</a> that calculation.</p>
+<p>For those of you uncomfortable with this alternate way of saying the same thing, recall that the <strong>dot-product</strong> computes exactly the same quantity in $Y$ that our linear model is trying to create. Click this link for some more discussion on matrix <a class="reference external" href="http://en.wikipedia.org/wiki/Matrix_multiplication">multiplication</a>.</p>
+<blockquote>
+The whole game of linear regression is finding a good matrix W</blockquote>
+<p>So, we know that $X \cdot W = Y$, and let's also say that $m$ is equal to the number of rows in $X$. We want to find a  matrix $W$, such that we have a &quot;good&quot; model ie...  $Y$ looks a lot like $T$.</p>
+<div class="section" id="error-function">
+<h3>Error Function</h3>
+<p>But how do we define &quot;good&quot;? Given a value $y_{ij}$, out of our $Y$ matrix, and the corresponding value $t_{ij}$ out of the $T$ matrix, we have to decide what is the &quot;error&quot; between them. Our favorite and most used error function is just the &quot;Squared Error&quot; function which is</p>
+<p>$$SE(y,t) = \dfrac{1}{2}(y-t)^2$$</p>
+<p>Now we can define our total mean error between our two matrices as $J$, namely</p>
+<p>$$J = \dfrac{1}{m} \sum_{i,j} SE(y_{ij}, t_{ij}) = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
+<blockquote>
+The name of the game is to minimize the total error</blockquote>
+<p>We essentially minimize the total error by using calculus (namely partial derivatives) to &quot;walk down&quot; our error function.</p>
+<p>Basically, we take our partial derivative in each variable ($w_{ij}$) and move it up or down depending on which direction makes our error slightly smaller. Another name for this common sense approach is <a class="reference external" href="http://en.wikipedia.org/wiki/Gradient_descent">gradient descent</a>.</p>
+</div>
+</div>
+<div class="section" id="questions">
+<h2>Questions</h2>
+<ol class="arabic simple">
+<li>Why do we divide the total error by $m$? Isn't minimizing the average error (with $m$) the same thing as minimizing our error without $m$?</li>
+</ol>
+<p>Yes it is. The choice of the error function (and the constants in front) are there to make our lives easier after we take the derivative. Once we take the derivative with respect to a given value, <cite>$w_{ab}$</cite>, in $W$, then we add that value to derivative value to $w_{ab}$. Now if we don't divide by $m$, and we take the derivative, our updated $w_{ab}$ will take a ginormous step in the new direction (as the error now depends on how many total datapoints there are). So we divide by $m$ to normalize the size of our update steps, and to make them independent of the number of datapoints in $Y$ and $T$.</p>
+<ol class="arabic simple" start="2">
+<li>Why do we divide the Squared Error by 2?</li>
+</ol>
+<p>Same as above. We are trying to make our lives easier after the derivative. Once we take the derivative of the Squared Error with respect to $y$, we pull down the power of $2$, and it cancels with the constant.</p>
+</div>
+<div class="section" id="pop-quiz">
+<h2>Pop Quiz</h2>
+<ol class="arabic simple">
+<li>If you wanted to create an error function that minimized the <strong>absolute</strong> difference between your output and the &quot;truth&quot;, what would it look like?</li>
+</ol>
+</div>
+<div class="section" id="derivative">
+<h2>Derivative</h2>
+<p>So let's randomly chuck some values, $w_{ab}$, into $W$, and let's call 'em &quot;weights&quot; from now on. Then let's compute the derivative of J with respect to some random weight, $w_{ab}$. Then let's move our weight in the <strong>opposite</strong> of what our error gradient returns, because we want to move <strong>down</strong> in error.</p>
+<p>Taking the derivative of our error expression above, we see that</p>
+<p>$$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
+<p>$$ \dfrac{dJ}{dw_{ab}} = \dfrac{1}{2m} \sum_{i,j} \dfrac{dJ}{dy_{ij}} * \dfrac{dy_{ij}}{dw_{ab}} = (\dfrac{1}{m} \sum_{i,j} (y_{ij} - t_{ij}) * \dfrac{dy_{ij}}{dw_{ab}}) $$</p>
+<p>To give some intuition on what we are trying to calculate in that second term, consider the following picture.</p>
+</div>
+<div class="section" id="picture-1">
+<h2>Picture 1</h2>
+<img alt="partial" src="theme/images/partial_y_w.png" style="height: 300px;" />
+<p>Given that $X \cdot W = Y$, consider a random element $y_{ij}$, and some equally random element of the weight matrix $w_{ab}$. How is $y_{ij}$ changed if we vary $w_{ab}$? It's pretty easy to see that changing $w_{ab}$ has no effect on $y_{ij}$, if $b \neq j$, because they are not in the same column.</p>
+<p>And if they are in the same column, we see that the derivative of</p>
+<p>$$\dfrac{dy_{ij}}{dw_{aj}} = x_{ia}$$</p>
+<p>Consider the following image. And the fact that</p>
+<p>$$y_{ij} = X_{i\_} \cdot W_{\_j} = \sum_{k} x_{ik}*w_{kj}$$</p>
+</div>
+<div class="section" id="picture-2">
+<h2>Picture 2</h2>
+<img alt="partial_col" src="theme/images/partial_y_w_col.png" style="height: 300px;" />
+<p>So, we see that</p>
+<p>$$ \dfrac{dJ}{dw_{ab}} = \dfrac{1}{2m} \sum_{i,j} \dfrac{dJ}{dy_{ij}} * \dfrac{dy_{ij}}{dw_{ab}} = (\dfrac{1}{m} \sum_{i,j} (y_{ij} - t_{ij})x_{ia}) $$</p>
+<p>if $j=b$, otherwise it is $0$.</p>
+<p>Now because $j=b$, we can simplify the expression above to</p>
+<p>$$ \dfrac{dJ}{dw_{ab}} = (\dfrac{1}{m} \sum_{i} (y_{ib} - t_{ib})x_{ia}) $$</p>
+<p>So there you go! That is the derivative with respect to a single element $w_{ab}$. Don't worry, we will clean it up (cause it is not that pretty) as soon as we take a ...</p>
+</div>
+<div class="section" id="quick-aside">
+<h2>Quick Aside</h2>
+<p>It's pretty easy to understand what I mean when I say $\dfrac{dJ}{dw_{ab}}$. In words, I am saying &quot;How much does J change if we wiggle $w_{ab}$&quot;? But what about the expression $\dfrac{dJ}{dQ}$, where $Q$ is some arbitrary matrix?</p>
+<p>To me this represents a matrix of size $Q$, where the element $q_{ab}$ is equal to $\dfrac{dJ}{dq_{ab}}$. In words, this quantity is a matrix that stores the partial derivatives <strong>in their correct place</strong>.</p>
+<p>As a picture it looks like this</p>
+<img alt="Matrix Derivative" src="theme/images/PartialDerivsQ.png" style="height: 300px;" />
+<p>This quantity is <strong>super</strong> useful. If you understand this explanation, you will save yourself a ton of time, and gain intuition about what you are actually calculating with almost all gradient descent algorithms.</p>
+<p>As a concrete example, let's compute $\dfrac{dJ}{dY}$. We see that it is</p>
+<img alt="Matrix Derivative" src="theme/images/PartialDerivsY.png" style="height: 300px;" />
+<p>The main goal of all of this is to calculate $\dfrac{dJ}{dW}$. That is the matrix of partials, that we can add to our original $W$ (making sure to multiply by negative 1, to walk <strong>down</strong> in error) to get our next estimate of $W$.</p>
+<p>It looks like this</p>
+<img alt="Matrix Derivative" src="theme/images/PartialDerivsW.png" style="height: 300px;" />
+</div>
+<div class="section" id="and-we-re-back">
+<h2>And We're Back</h2>
+<p>So we figured out that</p>
+<p>$$ \dfrac{dJ}{dw_{ab}} = (\dfrac{1}{m} \sum_{i} (y_{ib} - t_{ib})x_{ia}) $$</p>
+<p>Hmmmmm.... So how else can we understand this quantity? Well, let's think about the matrix which is $\dfrac{dJ}{dY}$.</p>
+<p>Every element of this matrix is $\dfrac{1}{m} y_{ij} - t_{ij}$. I like to think of this matrix as the first stop as we distribute the error to our weights. It contains all of the partials in $y_{ij}$. So then what is this quantity above then?</p>
+<p>$$ \dfrac{dJ}{dw_{ab}} = (\dfrac{1}{m} \sum_{i} (y_{ib} - t_{ib})x_{ia}) $$</p>
+<p>Well lets choose a random element, $w_{23}$, and try to visualize what we are summing up. This <a class="reference external" href="http://codepen.io/dcrmls/pen/jIkom">illustration</a> is <strong>super</strong> useful. If you stare at that visual, take a hard swig of brandy, and tilt your head to the side, you might realize how to dot these two columns together.</p>
+<p>We really want to rotate (transpose) that column in X, and then dot that with our column in $\dfrac{dJ}{dY}$. Once you make that connection, it is not hard to rewrite the sum above as</p>
+<p>$$\dfrac{dJ}{dw_{ab}} = \dfrac{1}{m}X_{\_a}^{T} \cdot (Y_{\_b}-T_{\_b})$$</p>
+<p>If I went a little too fast here, feel free to change the element in the codepen visual to build up an intuition about what you are doing.</p>
+<p>From that expression, we can now combine these results and create the matrix we want, while also cleaning up the expression. It now becomes.</p>
+<p>$$\dfrac{dJ}{dW} = \dfrac{1}{m}X^{T} \cdot (Y-T)$$</p>
+<p>or alternately</p>
+<p>$$\dfrac{dJ}{dW} = X^{T} \cdot \dfrac{dJ}{dY}$$</p>
+</div>
+<div class="section" id="derivative-complete">
+<h2>Derivative Complete</h2>
+<p>Wow! Well isn't that perdy! Every element of this matrix, $w_{ab}$, contains the exact value of $\dfrac{dJ}{dw_{ab}}$.</p>
+<p>If you didn't see this simplification, don't fret. I didn't see it either, until I filled up about 10 pages with these partial derivative / matrix calculations. This is me saving you some time.</p>
+<p>Given what we just learned, we now know that the matrix we need to add to our original weight matrix is</p>
+<p>$$W_{update} = -\alpha \dfrac{dJ}{dW} = -\dfrac{\alpha}{m}X^{T}\cdot(Y-T)$$</p>
+<p>$\alpha$ is a small constant called the &quot;learning rate&quot; which we need so that we don't take ginormous steps from one matrix to another. Remember our partial derivative is a <strong>local</strong> approximation, and so we should be careful to take smallish steps so as to avoid overshooting the minima that we are looking for.</p>
+<blockquote>
+I'm going to admit something right now.</blockquote>
+<p>There is a much easier way to do this calculation, but it doesn't make too much sense unless you slog through this. I'm sorry. But if you master some new notation then all of this derivative stuff through matrices becomes a lot simpler. I talk more about the details of this stuff as we head into Neural Net territory.</p>
+<blockquote>
+Foreshadowing</blockquote>
+<p>You did something pretty awesome today. You were able to write down an expression for $\dfrac{dJ}{dW}$ in terms of X,W, and $\dfrac{dJ}{dY}$.</p>
+<p>But what if we wanted to compute the derivative $\dfrac{dJ}{dX}$? More importantly, why would I ask you about a quantity like this? The keys to heaven, backpropogation, and eternal glory lie in the understanding of these two expressions, but it's no fun if I tell you everything...</p>
+</div>
+<div class="section" id="code">
+<h2>Code</h2>
+<p>Well, that was fun! But every problem lives two lives. The first life is when you solve it, the second is when you teach a computer to solve it.</p>
+<blockquote>
+What I cannot create, I do not understand.
+-- Richard Feynmann</blockquote>
+<p>So in the spirit of Richard Feynmann, it's time to create your Linear Regression class. Next week we compare notes.</p>
+<p>In the style of the scikit-learn libraries, I am going to write a class called LinearRegression, and have a fit method.</p>
+<p>The basic concept will look like this</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">transpose</span>
+
+<span class="k">class</span> <span class="nc">LinearRegression</span><span class="p">:</span>
+
+  <span class="c"># Constructor</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="n">SquaredError</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">):</span>
+    <span class="o">...</span>
+
+  <span class="c"># Feeds our input through our model</span>
+  <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="o">...</span>
+
+  <span class="c"># Given input, and truth, updates weights, once</span>
+  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+    <span class="o">...</span>
+
+  <span class="c"># Updates weights as many times as needed</span>
+  <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="c"># This is how I plan on using it</span>
+<span class="n">L</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">L</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+<span class="n">L</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+</pre></div>
+<p>Take a crack at it, and if you are stuck take a look at my github. I've implemented a few functions that might make it easier as well. Happy coding. Next week we hash out the details.</p>
+</div>
+</div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Dan Crescimanno</span>
+  </span>
+<time datetime="2014-03-01T00:00:00" pubdate>Sat 01 March 2014</time></p><div class="sharing">
+</div>    </footer>
+  </article>
+
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="/logistic-classification-code.html">Logistic Classification Code</a>
+      </li>
+      <li class="post">
+          <a href="/building-outward-toward-classification.html">Building outward toward Classification</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-2.html">Linear Regression Code pt 2</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression.html">Linear Regression</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="/category/python-math.html">python, math</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="/" type="application/rss+xml" rel="alternate">RSS</a></li>
+            <li><a href="#" target="_blank">You can add links in your config file</a></li>
+            <li><a href="#" target="_blank">Another social link</a></li>
+        </ul>
+    </section>
+    <section>
+        <h1>Blogroll</h1>
+        <ul>
+            <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
+            <li><a href="http://python.org/" target="_blank">Python.org</a></li>
+            <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+            <li><a href="#" target="_blank">You can modify those links in your config file</a></li>
+        </ul>
+    </section>
+
+</aside><aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="/logistic-classification-code.html">Logistic Classification Code</a>
+      </li>
+      <li class="post">
+          <a href="/building-outward-toward-classification.html">Building outward toward Classification</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-2.html">Linear Regression Code pt 2</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression.html">Linear Regression</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="/category/python-math.html">python, math</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="/" type="application/rss+xml" rel="alternate">RSS</a></li>
+            <li><a href="#" target="_blank">You can add links in your config file</a></li>
+            <li><a href="#" target="_blank">Another social link</a></li>
+        </ul>
+    </section>
+    <section>
+        <h1>Blogroll</h1>
+        <ul>
+            <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
+            <li><a href="http://python.org/" target="_blank">Python.org</a></li>
+            <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+            <li><a href="#" target="_blank">You can modify those links in your config file</a></li>
+        </ul>
+    </section>
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Dan -
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+</body>
+</html>

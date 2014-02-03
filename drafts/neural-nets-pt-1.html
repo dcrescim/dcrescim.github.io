@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Neural Nets pt 1</title>
+  <meta name="author" content="Dan">
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="/favicon.png" rel="icon">
+  <link href="/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+  <script src="/theme/js/modernizr-2.0.js"></script>
+  <script src="/theme/js/ender.js"></script>
+  <script src="/theme/js/octopress.js" type="text/javascript"></script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+  </script>
+
+  <script type="text/javascript"
+    src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
+
+
+  <link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="/">Test</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/" rel="subscribe-rss">RSS</a></li>
+</ul>
+
+<!-- TODO: add search here
+<form action="" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+-->
+
+<ul class="main-navigation">
+    <!-- TODO: add categories here? -->
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Neural Nets pt 1</h1>
+      <p class="meta"><time datetime="2014-03-25T00:00:00" pubdate>Tue 25 March 2014</time></p>
+</header>
+
+  <div class="entry-content"><p>One of the things that really bothers me about neural nets and backpropogation is the mysticism that surrounds it. Every time I look up backpropagation, I get a series of arcane steps that are equivalent to midieval alchemy. Here is a slide from Andrew Ng's lecture on how the backpropogation algorithm works.</p>
+<p>[Image]</p>
+<p>I get it. He is trying to side step the math, in order to get people to write the code (follow this random techno-babble), and move on. But what happens when they want to write their own neural net implementation that is $N$ layers deep? What happens when they try to experiment with a different error function? They are totally screwed.</p>
+<blockquote>
+The harder way is easier -- Zed Shaw</blockquote>
+<p>Sit down. Take out your pencil and take the partial derivate. The backpropogation algorithm wasn't handed down from God. Some dude, had to think this up. And so can you.</p>
+<p>Before we get into that, we need to unlearn some of the mental baggage that has been packaged with this idea.</p>
+<p>If you type neural net into a google search, you will probably find something like this</p>
+<p>[image]</p>
+<p>It's great, and it is super sexy. It looks much more impressive than the alternative</p>
+<p>[image]</p>
+<p>But the relationship between these two drawings is the relationship between &quot;The Cloud&quot; and &quot;A Server Somewhere&quot;. Technically, they are the same thing, but one <strong>sounds</strong> way sexier. You can write papers about &quot;The Cloud&quot;. Very rarely are papers written about &quot;A Server Somewhere&quot;. Those papers don't get read, and they don't get grants.</p>
+<p>But if you look closely at those two images again, you realize that they are identical. At the end of the day, you are storing these weights in a matrix. The difference is that one of these provides a context with 200 years of mathematical and computational maturity.</p>
+<p>People always yell about code reuse, but how often do you hear them yell about context reuse? When these weight matrices are taken totally out of their mathematical context you lose the connections that this stuff has with a thousand linear algebra ideas, and optimized algorithms. When you lose those connections, this &quot;algorithm&quot; needs to be recreated in once in every subfield. Here is a list of the rehashings of this basic idea.</p>
+<p>[list of them]</p>
+<p>You lose connections between this and all fields that have touched  of the awesomeness that smart dudes have figured out. What if you wanted to make gradient descent better (maybe by using second derivatives of your error function). These are called quasi-Newton methods. Maybe you want to have a faster gradient thingy, then you can get all of the other awesome stupidly fast techniques like L-BGFS. fminunc is the Matlab version. But if you take things out of their greater context, you can't reuse the web of ideas that connects this Thing to other Things.</p>
+<p>Herein lies the end of my rant. Let's take a derivative, and then understand this thing.</p>
+<div class="section" id="derivative">
+<h2>Derivative</h2>
+<p>Now we assume a model with 2 matrices to start.</p>
+<p>Here is what it looks like</p>
+<img alt="3-Layer Neural Net" src="theme/images/3-LayerNeuralNetv2.png" />
+<p>Let's figure out what the update matrix is for the first matrix, assume squared error, but the math doesn't change as long as you have</p>
+<p>$$\dfrac{dJ}{dW_1} = \dfrac{dJ}{dY} * \dfrac{dY}{dW_1} = \dfrac{dJ}{dY} .* F_1^{'}(X*W) .* \dfrac{d(X*W)}{dW}$$ = X^{T} * (T-Y) .* F_1^{X*W_1}$$</p>
+<p>Now let's do the math for the second matrix W_2</p>
+<p>$$\dfrac{dJ}{dW_2} = \dfrac{dJ}</p>
+<p>Well we know that</p>
+<p>$$\dfrac{dJ}{dY} = (T-Y) .* (1/Y .* (1-Y))$$</p>
+<p>$$Sig^{i}(X*W)$$ is just the sigmoid applied to every element of X*W</p>
+<p>$$\dfrac{d(X*W)}{dW} = X^{T} * (\dfrac{dJ}{dY} .* Sig^{'}(X*W)) = X^{T} * ((T-Y) .* (1/Y .* (1-Y)) .* Y .* (1-Y)) = X^{T} * (T-Y)$$</p>
+</div>
+</div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">Dan Crescimanno</span>
+  </span>
+<time datetime="2014-03-25T00:00:00" pubdate>Tue 25 March 2014</time></p><div class="sharing">
+</div>    </footer>
+  </article>
+
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="/logistic-classification-code.html">Logistic Classification Code</a>
+      </li>
+      <li class="post">
+          <a href="/building-outward-toward-classification.html">Building outward toward Classification</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-2.html">Linear Regression Code pt 2</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression.html">Linear Regression</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="/category/python-math.html">python, math</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="/" type="application/rss+xml" rel="alternate">RSS</a></li>
+            <li><a href="#" target="_blank">You can add links in your config file</a></li>
+            <li><a href="#" target="_blank">Another social link</a></li>
+        </ul>
+    </section>
+    <section>
+        <h1>Blogroll</h1>
+        <ul>
+            <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
+            <li><a href="http://python.org/" target="_blank">Python.org</a></li>
+            <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+            <li><a href="#" target="_blank">You can modify those links in your config file</a></li>
+        </ul>
+    </section>
+
+</aside><aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="/logistic-classification-code.html">Logistic Classification Code</a>
+      </li>
+      <li class="post">
+          <a href="/building-outward-toward-classification.html">Building outward toward Classification</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-2.html">Linear Regression Code pt 2</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
+      </li>
+      <li class="post">
+          <a href="/linear-regression.html">Linear Regression</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="/category/python-math.html">python, math</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="/" type="application/rss+xml" rel="alternate">RSS</a></li>
+            <li><a href="#" target="_blank">You can add links in your config file</a></li>
+            <li><a href="#" target="_blank">Another social link</a></li>
+        </ul>
+    </section>
+    <section>
+        <h1>Blogroll</h1>
+        <ul>
+            <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
+            <li><a href="http://python.org/" target="_blank">Python.org</a></li>
+            <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+            <li><a href="#" target="_blank">You can modify those links in your config file</a></li>
+        </ul>
+    </section>
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Dan -
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+</body>
+</html>
