@@ -74,6 +74,88 @@
 [image]</p>
 <p>This is what logistic classification looks like
 [image]</p>
+<p>What do they have in common. Well, for one, we see that the there are some operations that we should attach to the $W$ matrix. It can have a function application afterword (like in the case of Sig for logistic classification). The partial derivatives are calculated almost identically in these two scenarios.</p>
+<p>Let's write a &quot;layer&quot; class that generalizes this concept.</p>
+</div>
+<div class="section" id="layer">
+<h2>Layer</h2>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Identity</span><span class="p">):</span>
+
+  <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+      <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span>
+      <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span>
+      <span class="n">size</span> <span class="o">=</span> <span class="n">dim</span>
+    <span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+      <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span>
+      <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span>
+      <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="p">))</span>
+
+  <span class="k">else</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+  <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span> <span class="o">=</span> <span class="n">matrix_func</span>
+</pre></div>
+<p>This is a generalized version of what we have above. The &quot;matrix_func&quot; represents the function that we apply to each element of our matrix after we have dotted it with $W$, and added the intercept.</p>
+<p>So, a linear layer of size (2,2), and a logistic layer would be created like this, respectively</p>
+<div class="highlight"><pre><span class="n">linear_layer</span> <span class="o">=</span> <span class="n">Layer</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Identity</span><span class="p">)</span>
+<span class="n">logistic_layer</span> <span class="o">=</span> <span class="n">Layer</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Sig</span><span class="p">)</span>
+</pre></div>
+<p>We also know that the propogation of our partial derivatives is very similar in these cases too</p>
+</div>
+<div class="section" id="partial-north">
+<h2>Partial North</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">backward_north</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+  <span class="n">partials</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+  <span class="n">W_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">partials</span><span class="p">)</span>
+  <span class="n">b_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">partials</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">return</span> <span class="p">(</span><span class="n">W_partial</span><span class="p">,</span> <span class="n">b_partial</span><span class="p">)</span>
+</pre></div>
+<p>It's easy to see that we need the gradient of our matrix_func, for this backward step. Remember for example, our Logistic Classification. In it, we need to multiply by $y_{ij}*(1-y_{ij})$. That is the derivative of our Sig function applied to our linear output.</p>
+<p>So this makes us aware of three things.</p>
+<ol class="arabic simple">
+<li>Basically, every error function, and matrix func needs to be stored with both the original function for the <em>forward</em> pass, and the derivative needed for the <em>backward</em> pass of partials.</li>
+<li>We need to save the linear output, on the <em>forward</em> pass, because we need to multiply the partials by our chain ruled matrix_func derivative.</li>
+<li>We need to save the input <em>X</em>, because we need it to calculate $\dfrac{dJ}{dW} = X^{T} \cdot \dfrac{dJ}{dY}$, on the <em>backward</em> pass.</li>
+</ol>
+</div>
+<div class="section" id="forward">
+<h2>Forward</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+</pre></div>
+<p>Moreover whenever we have a model, that has more than one layer (or internal matrix/func combo), we need to be able to propogate the partials back to them.</p>
+<p>In the first post I alluded to the fact that we need to calculate $\dfrac{dJ}{dX}$. We need this value so that we can then use our <em>partial north</em> to compute the matrix of partials for our other internal matrices. Consider the following picture with two internal matrices.</p>
+<p>[image with matrices]</p>
+</div>
+<div class="section" id="derivative">
+<h2>Derivative</h2>
+<p>Let's pretend for a moment, that we had a model where $X$ was filled with variables that we could change, and $W$ was filled with things that we couldn't.</p>
+<p>Let's compute</p>
+<p>$$\dfrac{dJ}{dx_{ab}} = stuff $$</p>
+<p>which implies that
+$$\dfrac{dJ}{dX} = \dfrac{dJ}{dY} \cdot W^{T}$$</p>
+<p>Fix that.</p>
+<p>I like to call that the <strong>partial west</strong> (because we are moving the partials west in our model). Moreover, I like to call the other calculation the <strong>partial north</strong> because it moves a partial up one matrix in our model. That calculation looks like</p>
+<p>$$\dfrac{dJ}{dW} = X^{T} \cdot \dfrac{dJ}{dY}$$</p>
+<p>It's pretty amazing that from these two things, you can make models as arbitrarily large as you want. As you can see, the pushing of the partials recurses on itself as you move it westward.</p>
+<p>Here I add one more function to our layer</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">backward_west</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+  <span class="n">partials</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">partials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
 <p>If these pictures don't make sense, take a look at the beginning of this blog</p>
 <p>[linear regression link]</p>
 <p>We see that every model has this same sort of structure. Namely</p>

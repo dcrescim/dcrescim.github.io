@@ -183,10 +183,12 @@
   <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_db</span>
 </pre></div>
 <p>Where did that last line come from. Well I like to imagine adding an invisible column of 1's to X, and placing the intercept at the bottom of $W$. This looks like this</p>
-<p>[image with column of 1's, and bottom of $W$ is an intercept]</p>
+<img alt="Imaginary Column" src="theme/images/Imag_Col.png" />
 <p>Then you imagine the calculation of $X^{T} \cdot \dfrac{dJ}{dY}$ (which you showed to be the correct partials), and imagine what value you add to the intercept.</p>
 <p>That last column is</p>
-<p>[image of row of ones and dotted with dJ/dY]</p>
+<img alt="Imaginary Update" src="theme/images/Imag_Update.png" />
+<p>Zooming into the column of 1's we see that</p>
+<img alt="Intercept Update" src="theme/images/Intercept_Update.png" />
 <p>We see that it is just the vertical sum of whatever is in dJ/dY. Pretty nifty eh?</p>
 </div>
 <div class="section" id="testing">

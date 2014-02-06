@@ -69,39 +69,34 @@
 
   <div class="entry-content"><div class="section" id="last-time">
 <h2>Last Time</h2>
-<p>(link here)</p>
-<p>Last time, we did a lot of math and figured out how to write our logistic classification.</p>
+<p>Last time, we did a lot of math and figured out how to write our logistic classification. Here is a <a class="reference external" href="/building-outward-toward-classification.html">link</a> .</p>
 <p>1. If our error for our logistic classification was
 $$J = \dfrac{1}{m} \sum_{i,j} -(t_{ij}log(y_{ij}) + (1-t_{ij})log(1-y_{ij})) $$</p>
 <p>then our update to our weight matrix was</p>
-<p>$$W_{update} = -\dfrac{dJ}{dW} = -\dfrac{1}{m}X^{T}(Y-T)$$</p>
-<p>multiplied by a suitablely small constant (learning rate).</p>
+<p>$$W_{update} = -\alpha \dfrac{dJ}{dW} = -\dfrac{\alpha}{m}X^{T}(Y-T)$$</p>
 <p>Remember that $Y$ in this context if <strong>after</strong> the application of the Sig function to every element.</p>
 </div>
 <div class="section" id="setup">
 <h2>Setup</h2>
 <p>So what do we need in our logistic regression? Well, I basically want the exact same function calls that our linear regression makes. It should look like</p>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">transpose</span>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">LogisticClassification</span><span class="p">:</span>
 
-<span class="k">class</span> <span class="nc">LogisticClassification</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="n">CrossEntropyError</span><span class="p">,</span>
+               <span class="n">matrix_func</span><span class="o">=</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+               <span class="n">W</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="o">...</span>
 
-  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix_dim</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="n">SquaredError</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
     <span class="o">...</span>
 
   <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
     <span class="o">...</span>
 
-  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
     <span class="o">...</span>
 
-  <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">):</span>
     <span class="o">...</span>
-
-
-<span class="c"># This is how I plan on using it</span>
-<span class="n">L</span> <span class="o">=</span> <span class="n">LogisticClassification</span><span class="p">(</span><span class="n">matrix_dim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-<span class="n">L</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
-<span class="n">L</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 </pre></div>
 <p>In this way, most of the code from our linear regression can be used. What are the differences, though?</p>
 </div>
@@ -116,15 +111,15 @@ I created a new class for CrossEntropyError. It looks like this.</p>
 
   <span class="nd">@staticmethod</span>
   <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">):</span>
-    <span class="n">first</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Y</span><span class="p">)))</span>
-    <span class="n">second</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y</span><span class="p">)))</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">multiply</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Y</span><span class="p">)))</span>
+    <span class="n">second</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">multiply</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y</span><span class="p">)))</span>
     <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="n">second</span><span class="p">)</span><span class="o">/</span><span class="n">rows</span>
 
   <span class="nd">@staticmethod</span>
   <span class="k">def</span> <span class="nf">grad</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">):</span>
-    <span class="n">diff</span> <span class="o">=</span> <span class="n">Y</span><span class="o">-</span><span class="n">T</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">Y</span><span class="o">-</span><span class="n">T</span>
     <span class="n">denom</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">denom</span><span class="p">)</span><span class="o">/</span><span class="n">rows</span>
 </pre></div>
@@ -138,25 +133,21 @@ I created a new class for CrossEntropyError. It looks like this.</p>
     <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
 
   <span class="nd">@staticmethod</span>
-  <span class="k">def</span> <span class="nf">deriv</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">grad</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">Sig</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Sig</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </pre></div>
 <p>Let's take the main functions one by one.</p>
 </div>
 <div class="section" id="internal-functions">
 <h2>Internal Functions</h2>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">matrix_dim</span><span class="p">,</span>  <span class="n">error_func</span><span class="o">=</span><span class="n">CrossEntropyError</span><span class="p">,</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Sig</span><span class="p">):</span>
-  <span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">matrix_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="n">CrossEntropyError</span><span class="p">,</span> <span class="n">matrix_func</span><span class="o">=</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">W</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">lr</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">error_func</span> <span class="o">=</span> <span class="n">error_func</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span> <span class="o">=</span> <span class="n">matrix_func</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
 
-  <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
-    <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span>
-    <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="n">matrix_dim</span>
-  <span class="p">))</span>
-
-  <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span> <span class="o">=</span> <span class="n">Sig</span>
-
-  <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span> <span class="o">=</span> <span class="n">error_func</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="feed-forward">
@@ -165,8 +156,8 @@ I created a new class for CrossEntropyError. It looks like this.</p>
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">dot</span>
 
 <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-  <span class="n">Z</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
-  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
 </pre></div>
 <p>That is us feeding the our regression the input. We just add the sigmoid function to the dot product.</p>
 <p>Now let's take a stab at <strong>update</strong>. This is where the magic happens.</p>
@@ -175,27 +166,179 @@ I created a new class for CrossEntropyError. It looks like this.</p>
 <h2>Propogate-Back</h2>
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">transpose</span>
 
-<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
   <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-  <span class="n">Y_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
-  <span class="n">Y_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">deriv</span><span class="p">(</span><span class="n">Y_e</span><span class="p">)</span>
-  <span class="n">W_e</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">transpose</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">Y_e</span><span class="p">)</span>
-  <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">-=</span> <span class="n">lr</span><span class="o">*</span><span class="n">W_e</span>
+  <span class="n">dJ_dY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+
+  <span class="c">#Compute the chain rule for the Sig func</span>
+  <span class="c"># Carry our chained sig through our error</span>
+  <span class="n">dJ_dY</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+  <span class="n">dJ_dW</span>  <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">transpose</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">dJ_dY</span><span class="p">)</span>
+  <span class="n">dJ_db</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dJ_dY</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+  <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_dW</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_db</span>
 </pre></div>
-<p>The only difference between this function and the update with linear regression, is that we need to remember to chain the sig derivative through our matrix $Y_e$. This occurs in line 6.</p>
+<p>The only difference between this function and the update with linear regression, is that we need to remember to chain the sig derivative through our matrix $dJ_dY$. This occurs in line 6.</p>
+<p>That's about all of the differences.</p>
 </div>
-<div class="section" id="run-the-thing">
-<h2>Run The Thing</h2>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">lr</span><span class="p">)</span>
+<div class="section" id="all-the-code">
+<h2>All the code</h2>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">sklearn</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="kn">import</span> <span class="n">shuffle</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">transpose</span><span class="p">,</span> <span class="n">multiply</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+
+<span class="k">class</span> <span class="nc">CrossEntropyError</span><span class="p">:</span>
+
+  <span class="nd">@staticmethod</span>
+  <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">):</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">multiply</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Y</span><span class="p">)))</span>
+    <span class="n">second</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">multiply</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="n">second</span><span class="p">)</span><span class="o">/</span><span class="n">rows</span>
+
+  <span class="nd">@staticmethod</span>
+  <span class="k">def</span> <span class="nf">grad</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">):</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">Y</span><span class="o">-</span><span class="n">T</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">denom</span><span class="p">)</span><span class="o">/</span><span class="n">rows</span>
+
+<span class="k">class</span> <span class="nc">Sig</span><span class="p">:</span>
+  <span class="nd">@staticmethod</span>
+  <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+
+  <span class="nd">@staticmethod</span>
+  <span class="k">def</span> <span class="nf">grad</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">multiply</span><span class="p">(</span><span class="n">Sig</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Sig</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="k">class</span> <span class="nc">LogisticClassification</span><span class="p">:</span>
+
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="n">CrossEntropyError</span><span class="p">,</span> <span class="n">matrix_func</span><span class="o">=</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">W</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">lr</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span> <span class="o">=</span> <span class="n">error_func</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span> <span class="o">=</span> <span class="n">matrix_func</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">init_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">rows</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+      <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span>
+      <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span>
+      <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+    <span class="p">))</span>
+
+  <span class="k">def</span> <span class="nf">init_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">rows</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+      <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span>
+      <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span>
+      <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+    <span class="p">))</span>
+
+  <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">dJ_dY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="c">#Compute the chain rule for the Sig func</span>
+    <span class="c"># Carry our chained sig through our error</span>
+    <span class="n">dJ_dY</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+    <span class="n">dJ_dW</span>  <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">transpose</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">dJ_dY</span><span class="p">)</span>
+    <span class="n">dJ_db</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dJ_dY</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_dW</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_db</span>
+
+
+  <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">):</span>
+    <span class="c"># If we haven&#39;t created an internal matrix</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">init_matrix</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">init_intercept</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">):</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;Error: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
-<p>Altogether now, it looks like this. Ipython notebook, so we can see how to use it as well.</p>
-<p>For me:
-1. Finish writing this code
-2. Update code
-3. Make Ipython notebook</p>
+<p>Take a gander. From here we run our logistic classifier on the Iris dataset. We also run the logistic regression class that ships with scikit-learn. They aren't exactly the same in that the scikit-learn estimator has a regularizer which makes it hard to overfit the data (ours doesn't). But they should be in the same ballpark.</p>
+</div>
+<div class="section" id="testing-it">
+<h2>Testing It</h2>
+<div class="highlight"><pre><span class="c"># Get the Iris Classification Data</span>
+<span class="n">iris</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">load_iris</span><span class="p">()</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">shuffle</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># Split into training and testing chunks</span>
+<span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:</span><span class="n">offset</span><span class="p">],</span> <span class="n">T</span><span class="p">[:</span><span class="n">offset</span><span class="p">]</span>
+<span class="n">X_test</span><span class="p">,</span> <span class="n">T_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">offset</span><span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">offset</span><span class="p">:]</span>
+
+<span class="c"># Preprocess the X data, by using a scaling each feature</span>
+<span class="c"># independently. Scale both the test/train sets</span>
+<span class="n">X_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="n">X_scaler</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">X_train_normed</span> <span class="o">=</span> <span class="n">X_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">X_test_normed</span> <span class="o">=</span> <span class="n">X_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="c"># Turn our T into a binary matrix</span>
+<span class="n">Encoder</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">OneHotEncoder</span><span class="p">()</span>
+<span class="n">Encoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+<span class="n">T_train_encoded</span> <span class="o">=</span> <span class="n">Encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">T_train</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+<span class="n">T_test_encoded</span> <span class="o">=</span> <span class="n">Encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">T_test</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+
+<span class="c"># Create our logistic model</span>
+<span class="n">L</span> <span class="o">=</span> <span class="n">LogisticClassification</span><span class="p">()</span>
+<span class="n">L</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_normed</span><span class="p">,</span> <span class="n">T_train_encoded</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Our Test Set Error: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">L</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">X_test_normed</span><span class="p">,</span> <span class="n">T_test_encoded</span><span class="p">)</span>
+
+<span class="c"># Use sklearn&#39;s linear model to see how we did</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model.logistic</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_normed</span><span class="p">,</span> <span class="n">T_train</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+<span class="k">print</span> <span class="s">&quot;Scikit-Learn Test Set Error: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> \
+<span class="n">CrossEntropyError</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test_normed</span><span class="p">),</span> <span class="n">T_test_encoded</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="output">
+<h2>Output</h2>
+<p>Here is the printed errors as we train.</p>
+<div class="highlight"><pre><span class="n">Error</span><span class="p">:</span> <span class="mf">2.303380</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.842888</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.750933</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.709446</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.683358</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.664585</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.650116</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.638489</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.628871</span>
+<span class="n">Error</span><span class="p">:</span> <span class="mf">0.620743</span>
+<span class="n">Our</span> <span class="n">Test</span> <span class="n">Set</span> <span class="n">Error</span><span class="p">:</span> <span class="mf">0.872622</span>
+<span class="n">Scikit</span><span class="o">-</span><span class="n">Learn</span> <span class="n">Test</span> <span class="n">Set</span> <span class="n">Error</span><span class="p">:</span> <span class="mf">0.822527</span>
+</pre></div>
+<p>And there you go.
+Next time, we are going to use what we learned to build neural nets. And I promised to reveal one more secret that is going to make backpropogation about as easy as your abc's.</p>
 </div>
 </div>
     <footer>
