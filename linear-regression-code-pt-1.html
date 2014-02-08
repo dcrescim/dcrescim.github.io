@@ -69,7 +69,7 @@
 
   <div class="entry-content"><div class="section" id="last-time">
 <h2>Last Time</h2>
-<p>Aside from learning a new visual for matrix multiplication, we basically we learned one major thing last time</p>
+<p>Aside from learning a new visual for matrix multiplication, we basically learned one major thing last time</p>
 <p>1. If our total error for our linear regression was
 $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 <p>then the update to our weight matrix can be written as</p>
@@ -117,7 +117,8 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 </pre></div>
 <p>Basically, I want to pass in all of the variables that this algorithm needs. We obviously need the error function, the learning rate, and the total number of iterations that we want to use with our gradient descent.</p>
 <p>There are other methods that are smarter than just using a total number of iterations. I leave it to you to make this more badass (see the questions below).</p>
-<p>The matrix self.W is not created until we know the dimensions that it needs to be. That being said, sometimes I want to pass in a matrix $W$, as a starting point (for testing reasons), and so I have included that in the constructor. And we only know those dimensions when we call <em>fit</em>. We are going to write the <em>fit</em> function write after we sort out the error function.</p>
+<p>The matrix self.W cannot be created until we know it's dimensions. That being said, sometimes I want to pass in a matrix $W$ as a starting point so that I may test my update against another open source implementation that I trust to be correct.</p>
+<p>And we only know those dimensions of $W$ once we call <em>fit</em>. We are going to write the <em>fit</em> function right after we sort out the error function.</p>
 </div>
 <div class="section" id="error-funcs">
 <h2>Error Funcs</h2>
@@ -137,7 +138,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
   <span class="k">return</span> <span class="n">diff</span><span class="o">/</span><span class="n">rows</span>
 </pre></div>
 <p>So we see that <strong>square_error</strong> represents $J$, and the <strong>squared_error_grad</strong> represents $\dfrac{dJ}{dY}$. Check out the first <a class="reference external" href="/linear-regression.html">post</a>  (under the Quick Aside section) if this notation confuses you.</p>
-<p>By all means, pass this pair of error functions around as a tuple or something, but if we make a class we can reuse the structure later when we need more complicated error functions. I created a class SquaredError, and made the <strong>func</strong> and <strong>grad</strong> static methods on this class, so that I can type things like</p>
+<p>By all means, pass this pair of error functions around as a tuple or something. I chose to use a class (called SquaredError) with static methods (<strong>func</strong> and <strong>grad</strong>) so that I can type things like</p>
 <div class="highlight"><pre><span class="n">SquaredError</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="n">truth</span><span class="p">)</span>
 <span class="n">SquaredError</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="n">truth</span><span class="p">)</span>
 </pre></div>
@@ -176,7 +177,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
       <span class="k">print</span> <span class="s">&quot;Error: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
-<p>Basically fit just iterates, and calls the update function, after first making the matrix (stored in self.W).</p>
+<p>Basically <strong>fit</strong> just iterates, and calls the update function, after first making our internal matrix, $self.W$.</p>
 </div>
 <div class="section" id="internal-matrix">
 <h2>Internal Matrix</h2>
@@ -190,7 +191,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
     <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
   <span class="p">))</span>
 </pre></div>
-<p>We want the weights centered around 0. But maybe there is a better place to start the weights (that is where you come in).</p>
+<p>We want the weights centered around 0. That being said, there are other way to initialize our internal matrix. I invite you to experiment with alternative methods.</p>
 </div>
 <div class="section" id="feed-forward">
 <h2>Feed-Forward</h2>
@@ -200,7 +201,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
   <span class="k">return</span> <span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
 </pre></div>
-<p>That is us feeding the our regression the input. Pretty standard. After we have fed our input through the matrix, it is not hard to see how to compute the error.</p>
+<p>That is us feeding our regression the input. Pretty standard. After we have fed our input through the matrix, it is not hard to see how to compute the error.</p>
 </div>
 <div class="section" id="error-method">
 <h2>Error Method</h2>
@@ -221,7 +222,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
   <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_dW</span>
 </pre></div>
 <p>So we first make the output $Y$, and then start walking the partial derivatives back. The first stop on our trip is $\dfrac{dJ}{dY}$, or the gradient applied to (Y,T). Then once we have our partials, we compute $\dfrac{dJ}{dW}$.</p>
-<p>But that just updates our parameters once, so we need the fit to take in a number of times that we are going to run the update function.</p>
+<p>But that just updates our parameters once, so we need the <strong>fit</strong> to loop over the number of iterations that we have passed into the constructor (as $n_iter$).</p>
 </div>
 <div class="section" id="full-code">
 <h2>Full code</h2>
@@ -285,8 +286,8 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 </div>
 <div class="section" id="one-main-issue">
 <h2>One Main Issue</h2>
-<p>Well this is cute but there is one big issue here. In this version of our linear_regression, we don't have an intercept term (gasps!). Don't worry, we rectify this in pt2. But the real question is how would you solve this problem?</p>
-<p>Before we right that bit up, let's sanity check this implementation by watching our error decrease as we update our matrix $W$.</p>
+<p>Well this is cute, but there is one big issue here. In this version of our linear_regression, we don't have an intercept term (gasps!). Don't worry, we rectify this in pt2. But the real question is how would you solve this problem?</p>
+<p>Before we write that bit up, let's sanity check this implementation by watching our error decrease as we update our matrix $W$.</p>
 </div>
 <div class="section" id="testing-the-regression">
 <h2>Testing the Regression</h2>
@@ -308,7 +309,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 <span class="n">L</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_normed</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&quot;Our Error: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">L</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">X_normed</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
 </pre></div>
-<p>In my linear regression code, I assume that I am dealing with arrays, $X$, and $T$, that have 2 dimensions (so I have to force them into that shape). Next, we normalize our inputs, as gradient descent is highly sensitive to feature magnitudes. This is <strong>super</strong> important. You can check out what happens if you don't normalize your inputs in the ipython notebook. I'll save you some time. It's not pretty. We also commit one of the cardinal sins of machine learning, that is, we train and test on the same dataset. Don't worry we rectify all of these issues in pt2.</p>
+<p>In my linear regression code, I assume that I am dealing with numpy arrays, $X$ and $T$, that have 2 dimensions (so I have to force them into that shape). Next, we normalize our inputs, as gradient descent is highly sensitive to feature magnitudes. This is <strong>super</strong> important. You can check out what happens if you don't normalize your inputs in the ipython notebook. I'll save you some time. It's not pretty. We also commit one of the cardinal sins of machine learning, that is, we train and test on the same dataset. Don't worry we rectify all of these issues in pt2.</p>
 </div>
 <div class="section" id="output">
 <h3>Output</h3>
@@ -337,7 +338,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 <div class="section" id="interesting-things-to-think-about">
 <h2>Interesting things to think about</h2>
 <ol class="arabic simple">
-<li>I set the weights in $W$, to be uniformally randomly sampled about 0. Obviously, in a real linear regression we can solve for the exact weights in $W$. But what happens when we change our error function? If we change our error function to <strong>absolute</strong> difference, is there a closed form solution for $W$? Moreover, if we change our error function some function $J^{'}$, where there is no closed form solution, is there a way to start the weights at values &quot;close&quot; to some local minimum.</li>
+<li>I set the weights in $W$ to be uniformally randomly sampled about 0. Obviously, in a real linear regression we can solve for the exact weights in $W$. But what happens when we change our error function? If we change our error function to <strong>absolute</strong> difference, is there a closed form solution for $W$? Moreover, if we change our error function to some function $J^{'}$, where there is no closed form solution, is there a way to start the weights at values &quot;close&quot; to some local minimum.</li>
 <li>What is the best way to stop our gradient descent? How could we use training/testing sets to make this way more awesome/robust?</li>
 </ol>
 <p>There you have it. It is all downhill from here, except for the other uphill parts. Feel free to change stuff. It's a free world.</p>

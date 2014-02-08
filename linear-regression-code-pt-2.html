@@ -128,11 +128,11 @@
         <span class="k">print</span> <span class="s">&quot;Error: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
       <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
-<p>We need to add the intercept term to our model. We could go the route of just appending a column of 1's onto our matrix X, and then running the model like normal. But this approach doesn't really scale to Neural Net's. Here is an image of a 3 layer (2 matrix) Neural Net.</p>
+<p>We need to add the intercept term to our model. We could go the route of just appending a column of 1's onto our matrix X, and then running the model like we normally do. But this approach doesn't really scale to Neural Net's. Here is an image of a 3 layer (2 matrix) Neural Net.</p>
 <img alt="2 Matrix Neural Net" src="theme/images/3-LayerNeuralNetv2.png" />
 <p>Yes, we didn't cover Neural Net's yet, but we can still imagine the consequences of our decisions. Consider a generalization of our linear model where we have more internal matrices (which is exactly what a Neural Net is).</p>
-<p>If we have something like this, then every time we dot two matrices, we need to take the resultant matrix, and add a column of 1's. This means that we need to malloc space for a new bigger matrix, and then fill it with the correct values. This is slow, and can be done better.</p>
-<p>So we opt for different idea. Namely, we are going to add an intercept term to the model, making sure to update it correctly on the reverse trip (the update step).</p>
+<p>If we use the model above, then every time we dot two matrices, we need to add a column of 1's to the resultant matrix. This happens twice in the image above. If we go that route, then we need to malloc space for a new bigger matrix, and fill the last column with 1's. This is slow, and can be done better.</p>
+<p>So we opt for different idea. Namely, we are going to add an intercept term to the model, making sure to update it correctly on the reverse trip (the <strong>update</strong> step).</p>
 </div>
 <div class="section" id="initialization">
 <h2>Initialization</h2>
@@ -161,14 +161,14 @@
     <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
   <span class="p">))</span>
 </pre></div>
-<p>I need to update both the forward pass. Which is the <strong>predict</strong> method.</p>
+<p>If I now have an intercept term, I need to update my <strong>predict</strong> method.</p>
 </div>
 <div class="section" id="predict">
 <h2>Predict</h2>
 <div class="highlight"><pre><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
   <span class="k">return</span> <span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
 </pre></div>
-<p>But wait?! How does this work. The dot product of dot(X, self.W) returns a matrix, and the other element is an numpy array. Welcome to the big bad world of numpy broadcasting. The main idea of broadcasting is that numpy will try to understand the context of the calculation and <strong>broadcast</strong> your array into a matrix, so that these things can be added together. Check it <a class="reference external" href="http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html">out</a> .</p>
+<p>But wait?! How does this work? The dot product of dot(X, self.W) returns a matrix, and the other element is an numpy array. Welcome to the big bad world of numpy broadcasting. The main idea of broadcasting is that numpy will try to understand the context of the calculation and <strong>broadcast</strong> your array into a matrix, so that these things can be added together. Check it <a class="reference external" href="http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html">out</a> .</p>
 <p>Moving along, we write our update</p>
 </div>
 <div class="section" id="update">
@@ -182,18 +182,18 @@
   <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_dW</span>
   <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="o">*</span><span class="n">dJ_db</span>
 </pre></div>
-<p>Where did that last line come from. Well I like to imagine adding an invisible column of 1's to X, and placing the intercept at the bottom of $W$. This looks like this</p>
+<p>Where did that last line come from? Well I like to imagine adding an invisible column of 1's to X, and placing the intercept at the bottom of $W$. You can visualize like this</p>
 <img alt="Imaginary Column" src="theme/images/Imag_Col.png" />
-<p>Then you imagine the calculation of $X^{T} \cdot \dfrac{dJ}{dY}$ (which you showed to be the correct partials), and imagine what value you add to the intercept.</p>
-<p>That last column is</p>
+<p>Then imagine the calculation of $X^{T} \cdot \dfrac{dJ}{dY}$ (which we showed to be the correct partials in $W$), and imagine what value you add to the intercept.</p>
+<p>That last row in $\dfrac{dJ}{dW}$ is</p>
 <img alt="Imaginary Update" src="theme/images/Imag_Update.png" />
-<p>Zooming into the column of 1's we see that</p>
+<p>Zooming into the last row of $\dfrac{dJ}{dW}$, we see that</p>
 <img alt="Intercept Update" src="theme/images/Intercept_Update.png" />
-<p>We see that it is just the vertical sum of whatever is in dJ/dY. Pretty nifty eh?</p>
+<p>We see that it is just the vertical sum of whatever is in $\dfrac{dJ}{dY}$. Pretty nifty eh?</p>
 </div>
 <div class="section" id="testing">
 <h2>Testing</h2>
-<p>We test our implementation by splitting the boston housing data into training and testing sets, and then testing it against what the scikit learn linear regression returns.</p>
+<p>We test our implementation by splitting the boston housing data into training and testing sets, and then testing it against what the &quot;Scikit-Learn&quot; linear regression returns.</p>
 <p>The code looks like this.</p>
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="kn">import</span> <span class="n">shuffle</span>
@@ -316,7 +316,7 @@
 <span class="n">Our</span> <span class="n">Test</span> <span class="n">Set</span> <span class="n">Error</span><span class="p">:</span> <span class="mf">18.249858</span>
 <span class="n">Scikit</span><span class="o">-</span><span class="n">Learn</span> <span class="n">Test</span> <span class="n">Set</span> <span class="n">Error</span><span class="p">:</span> <span class="mf">18.248582</span>
 </pre></div>
-<p>Till next time.</p>
+<p>Next time we tweak our model to deal with classification problems and not regression problems.</p>
 </div>
 </div>
     <footer>

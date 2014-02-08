@@ -74,11 +74,11 @@
 $$J = \dfrac{1}{m} \sum_{i,j} -(t_{ij}log(y_{ij}) + (1-t_{ij})log(1-y_{ij})) $$</p>
 <p>then our update to our weight matrix was</p>
 <p>$$W_{update} = -\alpha \dfrac{dJ}{dW} = -\dfrac{\alpha}{m}X^{T}(Y-T)$$</p>
-<p>Remember that $Y$ in this context if <strong>after</strong> the application of the Sig function to every element.</p>
+<p>Remember that $Y$ in this context is <strong>after</strong> the application of the Sig function to every element.</p>
 </div>
 <div class="section" id="setup">
 <h2>Setup</h2>
-<p>So what do we need in our logistic regression? Well, I basically want the exact same function calls that our linear regression makes. It should look like</p>
+<p>So what do we need in our logistic classification? Well, I basically want the exact same function calls that our linear regression makes. It should look like</p>
 <div class="highlight"><pre><span class="k">class</span> <span class="nc">LogisticClassification</span><span class="p">:</span>
 
   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="n">CrossEntropyError</span><span class="p">,</span>
@@ -102,11 +102,13 @@ $$J = \dfrac{1}{m} \sum_{i,j} -(t_{ij}log(y_{ij}) + (1-t_{ij})log(1-y_{ij})) $$<
 </div>
 <div class="section" id="differences">
 <h2>Differences</h2>
+<div class="section" id="first">
+<h3>First</h3>
 <p>Certainly a different error function.
 I created a new class for CrossEntropyError. It looks like this.</p>
 </div>
 <div class="section" id="cross-entropy-error">
-<h2>Cross-Entropy Error</h2>
+<h3>Cross-Entropy Error</h3>
 <div class="highlight"><pre><span class="k">class</span> <span class="nc">CrossEntropyError</span><span class="p">:</span>
 
   <span class="nd">@staticmethod</span>
@@ -123,10 +125,13 @@ I created a new class for CrossEntropyError. It looks like this.</p>
     <span class="n">denom</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">denom</span><span class="p">)</span><span class="o">/</span><span class="n">rows</span>
 </pre></div>
-<p>Definitely different function after the dot_product. We need to write up the sigmoid.</p>
+</div>
+<div class="section" id="second">
+<h3>Second</h3>
+<p>Definitely different function after the dot product. We need to write up the sigmoid.</p>
 </div>
 <div class="section" id="sigmoid">
-<h2>Sigmoid</h2>
+<h3>Sigmoid</h3>
 <div class="highlight"><pre><span class="k">class</span> <span class="nc">Sig</span><span class="p">:</span>
   <span class="nd">@staticmethod</span>
   <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -136,7 +141,8 @@ I created a new class for CrossEntropyError. It looks like this.</p>
   <span class="k">def</span> <span class="nf">grad</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">Sig</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Sig</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </pre></div>
-<p>Let's take the main functions one by one.</p>
+<p>Let's write the main functions one by one.</p>
+</div>
 </div>
 <div class="section" id="internal-functions">
 <h2>Internal Functions</h2>
@@ -149,17 +155,18 @@ I created a new class for CrossEntropyError. It looks like this.</p>
 <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
 <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </pre></div>
+<p>The only difference between this constructor and the linear regression constructor, is the <strong>matrix_func</strong> argument. This argument is a function (<strong>Sig</strong> in this case), which is called on every element of our resultant dot product ($X*W$).</p>
 </div>
 <div class="section" id="feed-forward">
 <h2>Feed-Forward</h2>
-<p>Now, let write the next easy function, <strong>predict</strong></p>
+<p>Now, let's write the next easy function, <strong>predict</strong></p>
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">dot</span>
 
 <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
   <span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
   <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
 </pre></div>
-<p>That is us feeding the our regression the input. We just add the sigmoid function to the dot product.</p>
+<p>That is us feeding the our logistic classification the input. We just map the sigmoid function to the dot product.</p>
 <p>Now let's take a stab at <strong>update</strong>. This is where the magic happens.</p>
 </div>
 <div class="section" id="propogate-back">
@@ -323,7 +330,7 @@ I created a new class for CrossEntropyError. It looks like this.</p>
 </div>
 <div class="section" id="output">
 <h2>Output</h2>
-<p>Here is the printed errors as we train.</p>
+<p>Here are the printed errors as we train.</p>
 <div class="highlight"><pre><span class="n">Error</span><span class="p">:</span> <span class="mf">2.303380</span>
 <span class="n">Error</span><span class="p">:</span> <span class="mf">0.842888</span>
 <span class="n">Error</span><span class="p">:</span> <span class="mf">0.750933</span>

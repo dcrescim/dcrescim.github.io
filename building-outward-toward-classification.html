@@ -69,7 +69,7 @@
 
   <div class="entry-content"><div class="section" id="background">
 <h2>Background</h2>
-<p>So far, we have learned about regression, which implies that we are trying to predict a real number. But how does our analysis change if we are trying to predict a class label? A class label is just an integer which represents a certain type of object. Take for example the Iris dataset. It looks like this</p>
+<p>So far we have learned about regression, which implies that we are trying to predict a real number. But how does our analysis change if we are trying to predict a class label? A class label is just an integer which represents a certain type of object. Take for example the Iris dataset. It looks like this</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="17%" />
@@ -150,36 +150,36 @@
 <h2>Options</h2>
 <div class="section" id="good-ol-fashioned-linear-regression">
 <h3>Good 'Ol Fashioned Linear Regression</h3>
-<p>We could run linear regression just like before with our squared error. Only this time, after our training is completely done, we check the values in $Y$. If a value in $Y$ is greater than 0.5, we map it 1, and if it less than 0.5 then we map the result to 0. This stinks for one main reason.</p>
+<p>We could run linear regression just like before with our squared error. Only this time, after our training is completely done, we check the values in $Y$. If a value in $Y$ is greater than 0.5, we map it to 1, and if it is less than 0.5 then we map the result to 0. This stinks for one main reason.</p>
 <div class="section" id="problem">
 <h4>Problem</h4>
 <ol class="arabic simple">
-<li>It's hard to rationalize what we are doing. As we are training, we are generating results in $Y$, that are not necessarily between [0-1]. This means if our algorithm output some $y_{ij}$ that has value $2$. We are going to waste time updating weights in our matrix, so that that value is &quot;pushed&quot; closer to 1 (even though we would be classifying it correctly).</li>
+<li>It's hard to rationalize what we are doing. As we are training, we are generating results in $Y$ that are not necessarily between $\[0,1\]$. This means if our algorithm outputs some $y_{ij}$ that has value $2$, we are going to waste time updating weights in our matrix $W$, which will push $y_{ij}$ closer to 1 (even though we would be classifying it correctly).</li>
 </ol>
 </div>
 <div class="section" id="fix">
 <h4>Fix</h4>
-<p>Now this can be fixed if we first map our real numbered output to [0-1], by way of some function. As an added benefit, we can interpret this number as a probability. This provides two major benefits.</p>
+<p>This can be fixed if we first map our real numbered output to $$\[0,1\]$, by way of some function. This is also nifty because we can interpret this number as a probability. This provides two major benefits.</p>
 </div>
 <div class="section" id="benefits">
 <h4>Benefits</h4>
 <ol class="arabic simple">
-<li>If this algorithm is only one part of a machine learning pipeline/bigger software project, then interpreting our output $y_{ij}$ as probabilities provides a common interpretation of the output. Now we can chain programs together, as we have some intuition about the outputs of our program.</li>
-<li>If management asks what is the output of our algorithm, saying &quot;probabilities!&quot; sounds much more professional than &quot;uhhh... numbers ($y_{ij}$) which we want to be close to other numbers ($t_{ij}$)&quot;.</li>
+<li>If this algorithm is only one part of a machine learning pipeline/bigger software project, then interpreting our output $y_{ij}$ as a probability provides a common interpretation of the output. Now we can chain programs together, as we have some intuition about the outputs of our program.</li>
+<li>If management asks what the output of our algorithm represents, saying &quot;probabilities!&quot; sounds much more professional than &quot;uhhh... numbers ($y_{ij}$) which we want to be close to other numbers ($t_{ij}$)&quot;.</li>
 </ol>
-<p>So let's choose our favorite function that maps the real numbers $R$ onto [0-1]. For historical reasons people went with</p>
+<p>So let's choose our favorite function that maps the real numbers $R$ onto $$\[0,1\]$. For historical reasons people went with</p>
 <p>$$f(x) = Sig(x) = \dfrac{1}{1+e^{-x}}$$</p>
 </div>
 </div>
 <div class="section" id="linear-regression-with-transform">
 <h3>Linear Regression with Transform</h3>
-<p>So now after we dot $X*W$, we then map each one of those real values into the range [0-1], by use of our sigmoid function.</p>
+<p>After we dot $X \cdot W$, we then map each one of those real values into the range $\[0,1\], by use of our sigmoid function.</p>
 <p>$$f(x) = Sig(x) = \dfrac{1}{1+e^{-x}}$$</p>
-<p>And so $Y = Sig(X*W)$. From here we can just use our squared error, as the error function.</p>
+<p>And so $Y = Sig(X \cdot W)$. From here we can just use our squared error as the error function.</p>
 <div class="section" id="id1">
 <h4>Problem</h4>
 <ol class="arabic simple">
-<li>Squared Error doesn't really make sense in the context of probabilities. Consider the following two scenarious. Let's say you feed an example row through your model, and get out a row of probabilities, $y_{row}$ that represent's your predictions for a row of $T$, $t_{row}$. Let's say this row is of length 100, and that $t_{row}$ is the row of all 1's. Namely,</li>
+<li>Squared Error doesn't really make sense in the context of probabilities. Consider the following two scenarios. Let's say you feed an example row through your model and output a row of probabilities, $y_{row}$, that represents your predictions for a row of $T$, $t_{row}$. Let's say this row is of length 100, and that $t_{row}$ is the row of all 1's. Namely,</li>
 </ol>
 <p>$$t_{row} = [1, 1, ..., 1]$$</p>
 </div>
@@ -187,7 +187,7 @@
 <h4>Case 1:</h4>
 <p>Our output $y_{row}$ has the first element 0, and the rest are 1's. It looks like</p>
 <p>$$y_{row} = [0, 1, 1, ..., 1]$$</p>
-<p>The squared error between this row, and $t_{row}$ is then $\dfrac{1}{2}$ (remember we divide squared error by 2).</p>
+<p>The squared error between $y_{row}$ and $t_{row}$ is then $\dfrac{1}{2}$ (remember we divide squared error by 2).</p>
 </div>
 <div class="section" id="case-2">
 <h4>Case 2:</h4>
@@ -198,7 +198,7 @@
 <div class="section" id="issue">
 <h4>Issue</h4>
 <p>Our error function is indifferent to each of these two options. But are we?</p>
-<p>Let's say we are predicting the binary values of $t_{row}$ from our $y_{row}$. Let's map everything above .5 to 1, and everything below .5 to 0. We see that in case 1, we only get 99 of our predictions are right. Whereas in case 2, we get all 100 binary predictions correct. So it seems we have a preference for case 2. Is there a way to create a better error function, that encompasses more of our intuition? Let's do just that.</p>
+<p>Let's say we are predicting the binary values of $t_{row}$ from our $y_{row}$. Let's map everything above .5 to 1, and everything below .5 to 0. We see that in case 1, we only get 99 of our predictions right. Whereas in case 2, we get all 100 binary predictions correct. So it seems we have a preference for case 2. Is there a way to create a better error function that encompasses more of our intuition? Let's do just that.</p>
 </div>
 </div>
 </div>
@@ -208,23 +208,23 @@
 <ol class="arabic simple">
 <li>We want $E(t_{ij}, t_{ij}) = 0$</li>
 <li>We want $E(0, 1)$ to be large (that is as bad as it gets)</li>
-<li>We want it to somehow map case 2 to a lower error that case 1.</li>
+<li>We want it to somehow map case 2 to a lower error than case 1.</li>
 <li>Bonus points if we can make it cancel some of the added terms that our gradient has accumulated by our addition of the sigmoid to every element.</li>
 </ol>
 </div>
 <div class="section" id="squared-error-recap">
 <h2>Squared Error Recap</h2>
-<p>Let's revisit our squared error function and gradient, so that we have some context before we go searching for the magical function $E$, that we seek. I'm going to denote squared error as $SE$. We see that</p>
+<p>Let's revisit our squared error function and gradient, so that we have some context before we go searching for the magical function $E$. I'm going to denote squared error as $SE$. We see that</p>
 <p>$$SE(y_{ij}, t_{ij}) = \dfrac{1}{2} (y_{ij} - t_{ij})^2$$
 $$\dfrac{dSE}{dy_{ij}} = (y_{ij} - t_{ij})$$</p>
 </div>
 <div class="section" id="magical-derivative">
 <h2>Magical Derivative</h2>
-<p>We know that $Y = Sig(X*W)$. To make this even clearer, lets have $Z=X*W$, so that there is no mixup between $Y$, and the dot product of $X*W$. We see that $y_{ij} = Sig(z_{ij})$</p>
+<p>We know that $Y = Sig(X \cdot W)$. To make this even clearer, lets have $Z=X \cdot W$, so that there is no mixup between $Y$ and the dot product of $X \cdot W$. We see that $y_{ij} = Sig(z_{ij})$.</p>
 <p>Writing out our expression for the total error, we see that</p>
 <p>$$J = \dfrac{1}{m} \sum_{i,j} E(y_{ij}, t_{ij})$$
 $$\dfrac{dJ}{dw_{ab}} = \dfrac{1}{m} \sum_{i,j} \dfrac{dE(y_{ij}, t_{ij})}{dy_{ij}}*\dfrac{dy_{ij}}{w_{ab}} = \dfrac{1}{m} \sum_{i,j} \dfrac{dE(y_{ij}, t_{ij})}{y_{ij}} * y_{ij}*(1-y_{ij})*x_{ia}$$</p>
-<p>Great! But where did that term $y_{ij}*(1-y_{ij})$ come from? I remember that $x_{ia}$ from when we took the derivative in linear regression (link here).</p>
+<p>Great! But where did that term $y_{ij}*(1-y_{ij})$ come from? I remember that term $x_{ia}$ from when we took the derivative in linear regression <a class="reference external" href="/linear-regression.html">link</a>.</p>
 <p>Let's zoom in on the derivative in question. Remember that $y_{ij} = Sig(z_{ij})$.</p>
 <p>$$\dfrac{dy_{ij}}{dw_{ab}} = Sig^{'}(z_{ij}) * \dfrac{dz_{ij}}{dw_{ab}} = Sig^{'}(z_{ij}) * x_{ia}$$</p>
 <p>where $j = b$. Remember that term $x_{ia}$ from our <a class="reference external" href="/linear-regression.html">linear regression</a> .
@@ -249,12 +249,12 @@ $$\dfrac{dy_{ij}}{dw_{ab}} = Sig^{'}(z_{ij}) * x_{ia} = Sig(z_{ij})*(1-Sig(z_{ij
 </div>
 <div class="section" id="frankenstein-s-monster">
 <h2>Frankenstein's Monster</h2>
-<p>The thing you have just brought to life is called the &quot;Cross Entropy&quot;. Denote it like CE, and it looks like</p>
+<p>The thing you have just brought to life is called the &quot;Cross Entropy&quot;. Denote it CE, and it looks like</p>
 <p>$$CE(y_{ij}, t_{ij}) = -(t_{ij}*log(y_{ij}) + (1-t_{ij})*log(1-y_{ij}))$$</p>
 </div>
 <div class="section" id="the-main-derivative">
 <h2>The Main Derivative</h2>
-<p>Plugging in our error function, and allowing a bunch of things to cancel, we can calculate the main derivative.</p>
+<p>By plugging in our error function and allowing a bunch of things to cancel, we can calculate the main derivative.</p>
 <p>$$\dfrac{dJ}{dw_{ab}} = \dfrac{1}{m} \sum_{i,j} \dfrac{y_{ij} - t_{ij}}{y_{ij}*(1-y_{ij})} * y_{ij}*(1-y_{ij})*x_{ia} = \dfrac{1}{m} \sum_{i,j} (y_{ij} - t_{ij})x_{ia}$$</p>
 <p>Using the same trick as in the linear regression, we can convert this into</p>
 <p>$$\dfrac{dJ}{dW} = \dfrac{1}{m}X^{T}(Y-T)$$</p>
@@ -263,19 +263,19 @@ $$\dfrac{dy_{ij}}{dw_{ab}} = Sig^{'}(z_{ij}) * x_{ia} = Sig(z_{ij})*(1-Sig(z_{ij
 </div>
 <div class="section" id="what-have-we-done">
 <h2>What have we done</h2>
-<p>Let's recap, what we did. Given a dataset where we were trying to predict a binary class label (0 or 1), we created an algorithm that returns us a probability in the range [0-1]. This algorithm has 2 major differences from the linear regression that we created last weel.</p>
+<p>Let's recap what we did. Given a dataset where we were trying to predict a binary class label (0 or 1), we created an algorithm that returns us a probability in the range $\[0,1\]$. This algorithm has 2 major differences from the linear regression that we created last week.</p>
 </div>
 <div class="section" id="differences">
 <h2>Differences</h2>
 <ol class="arabic simple">
-<li>In normal linear regression, $Y = X*W$.
-In our algorithm. $Y = Sig(X*W)$</li>
+<li>In normal linear regression, $Y = X \cdot W$.
+In our algorithm, $Y = Sig(X \cdot W)$.</li>
 <li>Instead of using the squared error as our error function, we went with the cross-entropy error, which looks like</li>
 </ol>
 <p>$$CE(y_{ij}, t_{ij}) = -(t_{ij}*log(y_{ij}) + (1-t_{ij})*log(1-y_{ij}))$$</p>
 <p>We did this because we are comparing probabilities.</p>
 <p>The model still looks like this</p>
-<img alt="Logistic Regression" src="theme/images/LogRegv2.png" />
+<img alt="Logistic Classification" src="theme/images/LogisticClassification.png" />
 </div>
 <div class="section" id="creation">
 <h2>Creation</h2>
@@ -294,7 +294,7 @@ For the remainder of this blog, and for the remainder of my life, I'm going to c
 <p>The time is nigh for you to take a crack at this function. I'm going to borrow most of the stuff from the linear regression with minor tweaks. Once we get this right, we are going to kick this machine learning stuff into high gear. Hope you are ready.</p>
 <blockquote>
 We are going to build this as an extension to our linear regression.</blockquote>
-<p>Here is a famous example dataset. The first few values of the Iris dataset.</p>
+<p>Here is the outline of our LogisticClassification.</p>
 <div class="highlight"><pre><span class="k">class</span> <span class="nc">LogisticClassification</span><span class="p">:</span>
 
   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="n">CrossEntropyError</span><span class="p">,</span>
@@ -314,7 +314,7 @@ We are going to build this as an extension to our linear regression.</blockquote
   <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">):</span>
     <span class="o">...</span>
 </pre></div>
-<p>Moreover, I'm going to test it on the famous Iris dataset. It is easy to grab as it ships with the sklearn.datasets.</p>
+<p>I'm going to test our Logistic on the famous Iris dataset. It is easy to grab as it ships with the sklearn.datasets. See you space cowboy.</p>
 </div>
 </div>
     <footer>
