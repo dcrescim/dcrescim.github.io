@@ -72,9 +72,9 @@
 <h2>Neural Nets</h2>
 <p>Today we are going to build the framework for neural nets. Well what are neural nets? Here is a picture of one</p>
 <img alt="2-Layer Neural Net" src="theme/images/2-layer-neural.png" style="height: 400px;" />
-<p>These are not the only type of neural nets. You can connect nodes to themselves, and have edges that go &quot;backwords&quot;. But for right now, I'm restricting my attention to neural nets where every layer is fully connected to the layer right after it. Here is another simpler neural, that is only 1 layer deep.</p>
+<p>These are not the only type of neural nets. You can connect nodes to themselves, and have edges that go &quot;backwords&quot;. But for right now, I'm restricting my attention to neural nets where every layer is fully connected to the layer right after it. Here is another simpler neural net, that is only 1 layer deep.</p>
 <img alt="1-Layer Neural Net" src="theme/images/1-layer-neural.png" style="height: 400px;" />
-<p>Ok, but what do this simple diagram represent? When people talk about neural nets they usually have some input values which they assign to the nodes on the very left. Then these values are passed along each edge to the nodes on the right. In transit though each edge is multiplied by a weight value. Then all of the inputs coming into a node on the right are summed up. Then there is an optional function that is applied to the values in the nodes on the right.</p>
+<p>Ok, but what does this simple diagram represent? When people talk about neural nets they usually have some input values which they assign to the nodes on the very left. Then these values are passed along each edge to the nodes on the right. In transit though, these values are multiplied by a unique edge value (present in all edges). Afterwards. all of the inputs coming into a node on the right are summed up. Then there is an optional function that is applied to the values in the nodes on the right.</p>
 </div>
 <div class="section" id="matrices">
 <h2>Matrices</h2>
@@ -93,7 +93,7 @@ Please for the love of all that is green on this Earth, use matrices. It's simpl
 <img alt="2-Layer Matrix View" src="theme/images/2-layer-matrix.png" style="height: 500px;" />
 <p>But that is just one input. We can imagine passing in a bunch of inputs at once to create something like this.</p>
 <img alt="Larger Models" src="theme/images/LargerModels.png" />
-<p>So we see pictorially that the model we are creating for neural nets are just a generalization of the models that we have created for linear regression, and logistic classification. We just have more internal matrices now (and a wider variety of functions to apply after the dot). Well I'll be darned!</p>
+<p>So we see pictorially that the model we are creating for neural nets is just a generalization of the models that we have created for linear regression and logistic classification. We just have more internal matrices now (and a wider variety of functions to apply after the dot). Well, I'll be darned!</p>
 <blockquote>
 Like every gradient descent problem, the goal is to update the internal matrices to make Y close to T.</blockquote>
 <p>So the next question becomes, how do we update our internal matrices? We can do what we have always done which is just compute the partial derivatives of our error function with respect to every weight, and just walk down in error. That would definitely work. But what about this new-fangled approach called &quot;backpropagation&quot; that sounds so sexy and is all abuzz right now. Well I'm about to let the cat out of the bag</p>
@@ -108,7 +108,7 @@ Backpropagation IS the computation of the partial derivatives</blockquote>
 <p>Look, I get it. I understand that Andrew Ng is trying to sidestep the math, so that we (the reader) can write this mystery code and move on with our day. But <strong>ideas are only understood as an extension to our own thinking</strong>. Telling someone an answer is not knowledge. Telling someone a story, wherein they can create an answer, is knowledge.</p>
 <blockquote>
 Teachers that tell you the end of a story, are a dime a dozen. Teachers that weave a narrative so compelling that you write the end of the story, are in another league entirely.</blockquote>
-<p>All that being said, I think Andrew Ng is a god. Even while I can poke fun at his rendition of neural nets, I have benefited greatly from the thousands of things that he has taught me.</p>
+<p>All that being said, I think Andrew Ng is a god. Even while I poke fun at his rendition of neural nets, I have benefited greatly from the thousands of things that he has taught me.</p>
 <p>His rendition has information. That much can't be said for &quot;backpropagation&quot; as explained by ...</p>
 </div>
 <div class="section" id="wikipedia">
@@ -158,7 +158,7 @@ Teachers that tell you the end of a story, are a dime a dozen. Teachers that wea
       <span class="n">error</span> <span class="o">=</span> <span class="n">error</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">ao</span><span class="p">[</span><span class="n">k</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
   <span class="k">return</span> <span class="n">error</span>
 </pre></div>
-<p>Now what in the hell is going on here? Lots of things are getting calculated, but there is obviously a breakdown in <strong>meaning</strong>. What are we computing? And why are we computing it? And is this the best way to do that? This code is warning code about the dangers of not using matrices. I mean just look at it. The author has decided to do matrix operations <strong>without matrices</strong>.</p>
+<p>Now what in the hell is going on here? Lots of things are getting calculated, but there is obviously a breakdown in <strong>meaning</strong>. What are we computing? And why are we computing it? And is this the best way to do that? This code is warning code about the dangers of not using matrices. I mean just look at it. The author has decided to do matrix operations <strong>without using matrix operations</strong>.</p>
 </div>
 <div class="section" id="the-beginning">
 <h2>The beginning</h2>
@@ -172,12 +172,12 @@ The harder way is easier -- Zed Shaw</blockquote>
 <p>Basically, you had a model like this.</p>
 <img alt="Linear Regression" src="theme/images/LinReg.png" style="height: 400px;" />
 <p>From this image, you were able to compute $\dfrac{dJ}{dY}$. This quantity is a matrix of size $Y$, where the element at index $(i,j)$ is $\dfrac{dJ}{dy_{ij}}$. I like to think of this matrix as the partials <strong>in their correct place</strong>. If you are unfamiliar with this notation please read the <a class="reference external" href="/linear-regression.html">linear regression</a> post.</p>
-<p>From that you figured out that you could compute $\dfrac{dJ}{dW}$, which is exactly the quantity you needed in order to update your weights.</p>
+<p>From that, you figured out that you could compute $\dfrac{dJ}{dW}$, which is exactly the quantity you needed in order to update your weights.</p>
 </div>
 <div class="section" id="partial-north">
 <h2>Partial North</h2>
 <p>$$\dfrac{dJ}{dW} = X^{T} \cdot \dfrac{dJ}{dY}$$</p>
-<p>Now this <strong>Partial North</strong> calculation implies that you are not applying a function after you dot $X$ and $W$ (which you are not in linear regression). But for more interesting models (like logistic classification and neural nets), you are going to need factor that into your equation. Don't worry we do the more general case down below. But before we do the general case, let's do the easy case (assume no function), but let's go west this time.</p>
+<p>Now this <strong>Partial North</strong> calculation implies that you are not applying a function after you dot $X$ and $W$ (which you are not in linear regression). But for more interesting models (like logistic classification and neural nets), you are going to need to factor that into your equation. Don't worry, we do the more general case down below. But before we do the general case, let's do the easy case (assume no function), but let's go west this time.</p>
 <p>And so we create the ...</p>
 </div>
 <div class="section" id="partial-west">
@@ -201,7 +201,7 @@ The harder way is easier -- Zed Shaw</blockquote>
 if $a = i$, otherwise it is 0.</p>
 <p>So the expression becomes</p>
 <p>$$\dfrac{dJ}{dx_{ab}} = \dfrac{1}{m} \sum_{j} (y_{aj} - t_{aj})w_{bj}$$</p>
-<p>Because we can set $i = a$. Hmmm... So how can we simplify this expression. Let's consider one element, say $x_{23}$, and imagine what we are summing up to compute that value. Well we can stare at this <strong>awesome</strong> <a class="reference external" href="http://codepen.io/dcrmls/pen/JjgrI">visualization</a> of that calculation for value $x_{23}$. And if you glare at this for a while, take a swig of strong cognac, and tilt our head to the side, it might become clear to you how to proceed.</p>
+<p>Because we can set $i = a$. Hmmm... So how can we simplify this expression? Let's consider one element, say $x_{23}$, and imagine what we are summing up to compute that value. Well we can stare at this <strong>awesome</strong> <a class="reference external" href="http://codepen.io/dcrmls/pen/JjgrI">visualization</a> of that calculation for value $x_{23}$. And if you glare at this for a while, take a swig of strong cognac, and tilt our head to the side, it might become clear to you how to proceed.</p>
 <p>What we really want is to dot one row in $\dfrac{dJ}{dY}$ with another row in $W$. So if we take that one row in $\dfrac{dJ}{dY}$ and dot it with the <strong>transpose</strong> of that row in $W$, we get exactly what we want.</p>
 <p>$$\dfrac{dJ}{dx_{ab}} = \dfrac{1}{m} (Y_{a\_} - T_{a\_}) \cdot W_{b\_}^{T}$$</p>
 <p>Collecting those terms into a big 'ol matrix we find that</p>
@@ -214,7 +214,7 @@ if $a = i$, otherwise it is 0.</p>
 <h2>West Partial</h2>
 <p>$$\dfrac{dJ}{dX} = \dfrac{dJ}{dY} \cdot W^{T}$$</p>
 <p>Woah! Pretty sweet! But these two rules both assume that we are not applying a function after we dot $X$ and $W$. How can we make this generalize?</p>
-<p>Well after thinking about the chain rule, and looking over our analysis for linear regression, and logistic classification, we realize that every element in $\dfrac{dJ}{dY}$ needs to be multiplied by the derivative $f^{'}$ evaluated at our linear output.</p>
+<p>Well after thinking about the chain rule, and looking over our analysis for linear regression and logistic classification, we realize that every element in $\dfrac{dJ}{dY}$ needs to be multiplied by the derivative $f^{'}$ evaluated at our linear output.</p>
 <p>If this seems like a leap, check out the derivation of the logistic classification algorithm, and look at what we multiply our $\dfrac{dJ}{dY}$ by. The link is <a class="reference external" href="/building-outward-toward-classification.html">right here</a></p>
 </div>
 <div class="section" id="generalization">
@@ -233,7 +233,7 @@ if $a = i$, otherwise it is 0.</p>
 </div>
 <div class="section" id="nice">
 <h2>Nice!</h2>
-<p>And there you have it. The keys to the hovercar. From here, we see that we can recursively use these two rules to take steps west, and north in our model (and create the partial derivative of whatever internal matrix $W$ that we want). So armed with our two rules, we can now calculate just about anything for this class of generalized models.</p>
+<p>And there you have it. The keys to the hovercar. From here, we see that we can recursively use these two rules to take steps west and north. This will create the partial derivative of whatever internal matrix, $W$, that we need. So armed with our two rules, we can now calculate just about anything for this class of generalized models.</p>
 <p>Now it might not be obvious just how awesome these rules are just yet. So to make that clear and show how to use them, let's recreate all of the math for all of the models that we have build up to this point.</p>
 </div>
 <div class="section" id="linear-regression-with-squared-error">
@@ -247,17 +247,16 @@ $$\dfrac{dJ}{dY} = \dfrac{1}{m} (Y-T)$$</p>
 <p>What is $\dfrac{dJ}{dY}$ for cross entropy error?</p>
 <p>In the logistic regression post, we derived that</p>
 <p>$$\dfrac{dCE(y_{ij}, t_{ij})}{dy_{ij}} = \dfrac{y_{ij} - t_{ij}}{y_{ij}(1-y_{ij})}$$</p>
-<p>So every, element of $\dfrac{dJ}{dY}$, must be that, so then</p>
+<p>So every element of $\dfrac{dJ}{dY}$, must be that, so then</p>
 <p>$$\dfrac{dJ}{dY} = \dfrac{1}{m} \dfrac{Y-T}{Y(1-Y)}$$</p>
 <p>Element-wise division above.</p>
 <p>So then we see that</p>
-<p>$$\dfrac{dJ}{dW} = X^{T} \cdot \left(\dfrac{dJ}{dY} * Sig^{'}(X*W) \right) = X^{T} \cdot \left( \dfrac{1}{m} \dfrac{Y-T}{Y(1-Y)} * Y(1-Y) \right) = \dfrac{1}{m} X^T \cdot (Y-T)$$</p>
+<p>$$\dfrac{dJ}{dW} = X^{T} \cdot \left(\dfrac{dJ}{dY} * Sig^{'}(X \cdot W) \right) = X^{T} \cdot \left( \dfrac{1}{m} \dfrac{Y-T}{Y(1-Y)} * Y(1-Y) \right) = \dfrac{1}{m} X^T \cdot (Y-T)$$</p>
 <p>Well that was certainly faster.</p>
 </div>
 <div class="section" id="thoughts">
 <h2>Thoughts</h2>
-<p>The main benefit of all of this stuff is that the math suddenly becomes plug-and-playable. If you wanted to consider a totally different error function. Then all you need to do is create the corresponding $\dfrac{dJ}{dY}$, and the rest holds. If you wanted to
-try a different function $F$ after one of your dots ($X$ and $W$), then you just need to compute $F^{'}(X \cdot W)$, and everything else holds.</p>
+<p>The main benefit of all of this stuff is that the math suddenly becomes plug-and-playable. If you wanted to consider a totally different error function, then all you need to do is create the corresponding $\dfrac{dJ}{dY}$, and the rest holds. If you wanted to try a different function $F$ after one of your dots ($X$ and $W$), then you just need to compute $F^{'}(X \cdot W)$, and everything else holds.</p>
 </div>
 <div class="section" id="neural-net-2-layers">
 <h2>Neural Net 2 Layers</h2>
@@ -280,12 +279,14 @@ try a different function $F$ after one of your dots ($X$ and $W$), then you just
 <h3>Partial North</h3>
 <p>$$\dfrac{dJ}{dW_1} = X_1^{T} \cdot \left(\dfrac{dJ}{dX_1} * Sig^{'}(X_1 \cdot W_1) \right)
 = \dfrac{1}{m} X_1^{T} \cdot \left((Y-T) \cdot W_0^{T} * X_0(1-X_0)\right)$$</p>
-<p>Yes, that last expression is kinda big and ugly. Now, I want you to imagine doing that calculation <strong>without matrices</strong>. While you may never do this by hand again, it is nice to know that you are basically doing calculus through matrices, and that the rules for propagating partials are ones that you have created. Once you code this up, the alternation of the north and west partials will calculate the matrices that you require.</p>
+<p>Yes, that last expression is kinda big and ugly. Now, I want you to imagine doing that calculation <strong>without matrices</strong>. While you may never do this by hand again, it is nice to know that you are basically doing calculus through matrices, and that the rules for propagating partials are ones that you have created. Once you code this up, the alternation of the north and west partials will calculate the update to your internal matrices.</p>
 </div>
 </div>
 <div class="section" id="time-to-code">
 <h2>Time to Code</h2>
 <p>Now this is the fun part. It's time to write the Neural Net. I'll see you next week.</p>
+<p>For me:
+explain partial north, partial west</p>
 </div>
 </div>
     <footer>
