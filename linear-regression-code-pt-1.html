@@ -211,8 +211,8 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 </pre></div>
 <p>Now let's take a stab at <strong>update</strong>. This is where the magic happens.</p>
 </div>
-<div class="section" id="propogate-back">
-<h2>Propogate-Back</h2>
+<div class="section" id="propagate-back">
+<h2>Propagate-Back</h2>
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">transpose</span>
 
 <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
@@ -338,7 +338,7 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
 <div class="section" id="interesting-things-to-think-about">
 <h2>Interesting things to think about</h2>
 <ol class="arabic simple">
-<li>I set the weights in $W$ to be uniformally randomly sampled about 0. Obviously, in a real linear regression we can solve for the exact weights in $W$. But what happens when we change our error function? If we change our error function to <strong>absolute</strong> difference, is there a closed form solution for $W$? Moreover, if we change our error function to some function $J^{'}$, where there is no closed form solution, is there a way to start the weights at values &quot;close&quot; to some local minimum.</li>
+<li>I set the weights in $W$ to be uniformly randomly sampled about 0. Obviously, in a real linear regression we can solve for the exact weights in $W$. But what happens when we change our error function? If we change our error function to <strong>absolute</strong> difference, is there a closed form solution for $W$? Moreover, if we change our error function to some function $J^{'}$, where there is no closed form solution, is there a way to start the weights at values &quot;close&quot; to some local minimum.</li>
 <li>What is the best way to stop our gradient descent? How could we use training/testing sets to make this way more awesome/robust?</li>
 </ol>
 <p>There you have it. It is all downhill from here, except for the other uphill parts. Feel free to change stuff. It's a free world.</p>
@@ -359,6 +359,9 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="/building-outwards-towards-neural-nets.html">Building outwards towards Neural Nets</a>
+      </li>
+      <li class="post">
           <a href="/logistic-classification-code.html">Logistic Classification Code</a>
       </li>
       <li class="post">
@@ -369,9 +372,6 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
       </li>
       <li class="post">
           <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
-      </li>
-      <li class="post">
-          <a href="/linear-regression.html">Linear Regression</a>
       </li>
     </ul>
   </section>
@@ -412,6 +412,9 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="/building-outwards-towards-neural-nets.html">Building outwards towards Neural Nets</a>
+      </li>
+      <li class="post">
           <a href="/logistic-classification-code.html">Logistic Classification Code</a>
       </li>
       <li class="post">
@@ -422,9 +425,6 @@ $$J = \dfrac{1}{2m} \sum_{i,j} (y_{ij} - t_{ij})^{2} $$</p>
       </li>
       <li class="post">
           <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
-      </li>
-      <li class="post">
-          <a href="/linear-regression.html">Linear Regression</a>
       </li>
     </ul>
   </section>

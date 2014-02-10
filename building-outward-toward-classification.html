@@ -154,12 +154,12 @@
 <div class="section" id="problem">
 <h4>Problem</h4>
 <ol class="arabic simple">
-<li>It's hard to rationalize what we are doing. As we are training, we are generating results in $Y$ that are not necessarily between $\[0,1\]$. This means if our algorithm outputs some $y_{ij}$ that has value $2$, we are going to waste time updating weights in our matrix $W$, which will push $y_{ij}$ closer to 1 (even though we would be classifying it correctly).</li>
+<li>It's hard to rationalize what we are doing. As we are training, we are generating results in $Y$ that are not necessarily between $[0,1]$. This means if our algorithm outputs some $y_{ij}$ that has value $2$, we are going to waste time updating weights in our matrix $W$, which will push $y_{ij}$ closer to 1 (even though we would be classifying it correctly).</li>
 </ol>
 </div>
 <div class="section" id="fix">
 <h4>Fix</h4>
-<p>This can be fixed if we first map our real numbered output to $$\[0,1\]$, by way of some function. This is also nifty because we can interpret this number as a probability. This provides two major benefits.</p>
+<p>This can be fixed if we first map our real numbered output to $[0,1]$, by way of some function. This is also nifty because we can interpret this number as a probability. This provides two major benefits.</p>
 </div>
 <div class="section" id="benefits">
 <h4>Benefits</h4>
@@ -167,13 +167,13 @@
 <li>If this algorithm is only one part of a machine learning pipeline/bigger software project, then interpreting our output $y_{ij}$ as a probability provides a common interpretation of the output. Now we can chain programs together, as we have some intuition about the outputs of our program.</li>
 <li>If management asks what the output of our algorithm represents, saying &quot;probabilities!&quot; sounds much more professional than &quot;uhhh... numbers ($y_{ij}$) which we want to be close to other numbers ($t_{ij}$)&quot;.</li>
 </ol>
-<p>So let's choose our favorite function that maps the real numbers $R$ onto $$\[0,1\]$. For historical reasons people went with</p>
+<p>So let's choose our favorite function that maps the real numbers $R$ onto $[0,1]$. For historical reasons people went with</p>
 <p>$$f(x) = Sig(x) = \dfrac{1}{1+e^{-x}}$$</p>
 </div>
 </div>
 <div class="section" id="linear-regression-with-transform">
 <h3>Linear Regression with Transform</h3>
-<p>After we dot $X \cdot W$, we then map each one of those real values into the range $\[0,1\], by use of our sigmoid function.</p>
+<p>After we dot $X \cdot W$, we then map each one of those real values into the range $[0,1]$, by use of our sigmoid function.</p>
 <p>$$f(x) = Sig(x) = \dfrac{1}{1+e^{-x}}$$</p>
 <p>And so $Y = Sig(X \cdot W)$. From here we can just use our squared error as the error function.</p>
 <div class="section" id="id1">
@@ -263,7 +263,7 @@ $$\dfrac{dy_{ij}}{dw_{ab}} = Sig^{'}(z_{ij}) * x_{ia} = Sig(z_{ij})*(1-Sig(z_{ij
 </div>
 <div class="section" id="what-have-we-done">
 <h2>What have we done</h2>
-<p>Let's recap what we did. Given a dataset where we were trying to predict a binary class label (0 or 1), we created an algorithm that returns us a probability in the range $\[0,1\]$. This algorithm has 2 major differences from the linear regression that we created last week.</p>
+<p>Let's recap what we did. Given a dataset where we were trying to predict a binary class label (0 or 1), we created an algorithm that returns us a probability in the range $[0,1]$. This algorithm has 2 major differences from the linear regression that we created last week.</p>
 </div>
 <div class="section" id="differences">
 <h2>Differences</h2>
@@ -285,7 +285,7 @@ For the remainder of this blog, and for the remainder of my life, I'm going to c
 </div>
 <div class="section" id="future">
 <h2>Future</h2>
-<p>This will be the last time you take a derivative of your error with respect to an individual variable. Next week, I'm going to show you a way to store your partial derivatives in a matrix. You will need 2 rules in order to propogate those partials backwards, and then you can recreate all of this jazz in 2 lines. Moreover, you will be able to succintly write out the update matrices for neural nets. Neural nets are just generalizations of these models but with more internal matrices. A neural net with 2 internal matrices looks like this.</p>
+<p>This will be the last time you take a derivative of your error with respect to an individual variable. Next week, I'm going to show you a way to store your partial derivatives in a matrix. You will need 2 rules in order to propagate those partials backwards, and then you can recreate all of this jazz in 2 lines. Moreover, you will be able to succinctly write out the update matrices for neural nets. Neural nets are just generalizations of these models but with more internal matrices. A neural net with 2 internal matrices looks like this.</p>
 <img alt="3-Layer Neural Net" src="theme/images/3-LayerNeuralNetv2.png" />
 <p>We'll get there.</p>
 </div>
@@ -332,6 +332,9 @@ We are going to build this as an extension to our linear regression.</blockquote
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="/building-outwards-towards-neural-nets.html">Building outwards towards Neural Nets</a>
+      </li>
+      <li class="post">
           <a href="/logistic-classification-code.html">Logistic Classification Code</a>
       </li>
       <li class="post">
@@ -342,9 +345,6 @@ We are going to build this as an extension to our linear regression.</blockquote
       </li>
       <li class="post">
           <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
-      </li>
-      <li class="post">
-          <a href="/linear-regression.html">Linear Regression</a>
       </li>
     </ul>
   </section>
@@ -385,6 +385,9 @@ We are going to build this as an extension to our linear regression.</blockquote
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="/building-outwards-towards-neural-nets.html">Building outwards towards Neural Nets</a>
+      </li>
+      <li class="post">
           <a href="/logistic-classification-code.html">Logistic Classification Code</a>
       </li>
       <li class="post">
@@ -395,9 +398,6 @@ We are going to build this as an extension to our linear regression.</blockquote
       </li>
       <li class="post">
           <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
-      </li>
-      <li class="post">
-          <a href="/linear-regression.html">Linear Regression</a>
       </li>
     </ul>
   </section>
