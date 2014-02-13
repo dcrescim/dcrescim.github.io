@@ -291,19 +291,26 @@ The name of the game is to minimize the total error</blockquote>
 <p>If I went a little too fast here, feel free to change the element in the codepen visual to build up an intuition about what you are doing.</p>
 <p>From that expression, we can now combine these results and create the matrix we want, while also cleaning up the expression. It now becomes.</p>
 <p>$$\dfrac{dJ}{dW} = \dfrac{1}{m}X^{T} \cdot (Y-T)$$</p>
-<p>or alternately</p>
+<p>Wow! Well isn't that perdy! Every element of this matrix, $w_{ab}$, contains the exact value of $\dfrac{dJ}{dw_{ab}}$.</p>
+<p>If you didn't see this simplification, don't fret. I didn't see it either, until I filled up about 10 pages with these partial derivative / matrix calculations. This is me saving you some time.</p>
+</div>
+<div class="section" id="interesting-thoughts">
+<h2>Interesting Thoughts</h2>
+<p>We just created the matrix of partials for $W$, namely</p>
+<p>$$\dfrac{dJ}{dW} = \dfrac{1}{m}X^{T} \cdot (Y-T)$$</p>
+<p>This can also be written as</p>
 <p>$$\dfrac{dJ}{dW} = X^{T} \cdot \dfrac{dJ}{dY}$$</p>
+<p>In words, we are saying that if we have the matrix of partials stored in $Y$ (namely $\dfrac{dJ}{dY}$), we can walk this quantity <strong>north</strong> to get the matrix of partials $\dfrac{dJ}{dW}$.</p>
+<p>I call this operation the <strong>Partial North</strong>, and you will see it crop up again, as you derive logistic classification, and neural nets.</p>
 </div>
 <div class="section" id="derivative-complete">
 <h2>Derivative Complete</h2>
-<p>Wow! Well isn't that perdy! Every element of this matrix, $w_{ab}$, contains the exact value of $\dfrac{dJ}{dw_{ab}}$.</p>
-<p>If you didn't see this simplification, don't fret. I didn't see it either, until I filled up about 10 pages with these partial derivative / matrix calculations. This is me saving you some time.</p>
 <p>Given what we just learned, we now know that the matrix we need to add to our original weight matrix is</p>
 <p>$$W_{update} = -\alpha \dfrac{dJ}{dW} = -\dfrac{\alpha}{m}X^{T}\cdot(Y-T)$$</p>
 <p>$\alpha$ is a small constant called the &quot;learning rate&quot; which we need so that we don't take ginormous steps from one matrix to another. Remember our partial derivative is a <strong>local</strong> approximation, and so we should be careful to take smallish steps so as to avoid overshooting the minima that we are looking for.</p>
 <blockquote>
 I'm going to admit something right now.</blockquote>
-<p>There is a much easier way to do this calculation, but it doesn't make too much sense unless you slog through this. I'm sorry. But if you master some new notation then all of this derivative stuff through matrices becomes a lot simpler. I talk more about the details of this stuff as we head into Neural Net territory.</p>
+<p>There is a much easier way to do this calculation, but it doesn't make too much sense unless you slog through this. I'm sorry. But if you derive a couple rules, this derivative stuff through matrices becomes a lot simpler. I talk more about the details of this stuff as we head into Neural Net territory.</p>
 <blockquote>
 Foreshadowing</blockquote>
 <p>You did something pretty awesome today. You were able to write down an expression for $\dfrac{dJ}{dW}$ in terms of X,W, and $\dfrac{dJ}{dY}$.</p>

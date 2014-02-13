@@ -283,9 +283,53 @@ In our algorithm, $Y = Sig(X \cdot W)$.</li>
 <blockquote>
 For the remainder of this blog, and for the remainder of my life, I'm going to call this thing &quot;Logistic Classification&quot;. Feel free to join me.</blockquote>
 </div>
+<div class="section" id="interesting-ideas">
+<h2>Interesting Ideas</h2>
+<p>When I write the expression $\dfrac{A}{B}$ for matrices $A$, and $B$, I am talking about the <strong>element-wise</strong> division of those matrices. If I wanted to multiply $A$, by the inverse of $B$, I would write $A \cdot B^{-1}$. Moreover, when I want to multiply two matrices together <strong>element-wise</strong>, I write either $AB$ or $A * B$. If I wanted to <strong>dot</strong> two matrices together I write it like $A \cdot B$.</p>
+<p>In our post on linear regression, we created this rule called the <strong>Partial North</strong>. Does this rule work for logistic classification? We were able to write</p>
+<p>$$\dfrac{dJ}{dW} = X^T \cdot \dfrac{dJ}{dY}$$</p>
+<p>But what is $\dfrac{dJ}{dY}$ for Cross-Entropy Error? We know that</p>
+<p>$$\dfrac{dCE(y_{ij}, t_{ij})}{dy_{ij}} = \dfrac{y_{ij} - t_{ij}}{y_{ij}(1-y_{ij})}$$</p>
+<p>So every element of $\dfrac{dJ}{dY}$, must be that, so then</p>
+<p>$$\dfrac{dJ}{dY} = \dfrac{1}{m} \dfrac{Y-T}{Y(1-Y)}$$</p>
+<p>Hmm... But then it looks like our rule doesn't work because we would calculate</p>
+<p>$$\dfrac{dJ}{dW} = X^T \cdot \dfrac{1}{m} \dfrac{Y-T}{Y(1-Y)}$$</p>
+<p>And this is not what we got above. So what did we miss?</p>
+</div>
+<div class="section" id="chain-rule">
+<h2>Chain Rule</h2>
+<p>If you look at the analysis above for the derivative of $J$, we realize that we are not computing the chain rule through the derivative of our Sig function.
+Take for example the sum in linear regression. It looks vaguely like this</p>
+<div class="section" id="linear-regression-sum">
+<h3>Linear Regression Sum</h3>
+<dl class="docutils">
+<dt>$$\sum_{i,j} (y_{ij} - t_{ij})x_{ia} =</dt>
+<dd>\sum_{i,j} \dfrac{dSE(y_{ij}, t_{ij}}{dy_{ij}x_{ia}$$</dd>
+</dl>
+<p>Eventually that $x_{ia}$ turns into our matrix $X^{T}$, and the derivative turns into $\dfrac{dJ}{dY}$.</p>
+<p>In contrast the sum in logistic classification looks vaguely like</p>
+</div>
+<div class="section" id="logistic-classification-sum">
+<h3>Logistic Classification Sum</h3>
+<p>$$\sum_{i,j} \dfrac{CE(y_{ij}, t_{ij})}{y_{ij}}y_{ij}*(1-y_{ij})x_{ia}$$</p>
+<p>Well, it looks like that term $y_{ij}(1-y_{ij})$ is really the difference. We remember that this term is really $Sig^{'}(z_{ij})$. So what we realize is that we need to take the derivative of our $f^{'}$ and multiply it <strong>element-wise</strong> to each element.</p>
+<p>If we think of this in matrix notation, we get the following.</p>
+<p>$$\dfrac{dJ}{dY} * f^{'}(X \cdot W)$$</p>
+<p>Note that $X \cdot W$ will generate the linear output of our model, which is $Z$ in our analysis above. Then we use the derivative of our function, and multiply that element-wise to $\dfrac{dJ}{dY}$.</p>
+<p>Using what we have learned from this analysis, you can write the <strong>Generalized Partial North</strong>. It looks like</p>
+</div>
+</div>
+<div class="section" id="generalized-partial-north">
+<h2>Generalized Partial North</h2>
+<p>If we have $Y = f(X \cdot W)$, then we know</p>
+<p>$$\dfrac{dJ}{dW} = X^{T} \cdot \left(\dfrac{dJ}{dY} * f^{'}(X \cdot W) \right)$$</p>
+<p>I'll show you how to use this rule, along with it's counterpart as we head into Neural Net territory.</p>
+</div>
 <div class="section" id="future">
 <h2>Future</h2>
-<p>This will be the last time you take a derivative of your error with respect to an individual variable. Next week, I'm going to show you a way to store your partial derivatives in a matrix. You will need 2 rules in order to propagate those partials backwards, and then you can recreate all of this jazz in 2 lines. Moreover, you will be able to succinctly write out the update matrices for neural nets. Neural nets are just generalizations of these models but with more internal matrices. A neural net with 2 internal matrices looks like this.</p>
+<p>You derived a way above to compute the matrix of partials which are <strong>north</strong> of your current matrix of partials. Moreover, you can now use any function that you want (not just Sig), and it still works!</p>
+<p>So you have figured out how to move your partials north in a generalized way, but how do you move them <strong>west</strong>, and why is that important? Don't worry we will derive this next rule soon, as we move into the twisted land of Neural Nets. What is a neural net, you ask? Neural nets are just generalizations of these models but with more internal matrices.
+A neural net with 2 internal matrices looks like this.</p>
 <img alt="3-Layer Neural Net" src="theme/images/3-LayerNeuralNetv2.png" />
 <p>We'll get there.</p>
 </div>

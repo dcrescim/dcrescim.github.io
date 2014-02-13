@@ -67,98 +67,234 @@
       <p class="meta"><time datetime="2014-03-17T00:00:00" pubdate>Mon 17 March 2014</time></p>
 </header>
 
-  <div class="entry-content"><div class="section" id="setup">
+  <div class="entry-content"><p>Last time we did this [link].</p>
+<div class="section" id="setup">
 <h2>Setup</h2>
-<p>Let's take a 10,000 ft view of everything we just learned. And then let's anticipate where we think everything is going.</p>
-<p>This is what linear regression looks like
-[image]</p>
-<p>This is what logistic classification looks like
-[image]</p>
-<p>What do they have in common. Well, for one, we see that the there are some operations that we should attach to the $W$ matrix. It can have a function application afterword (like in the case of Sig for logistic classification). The partial derivatives are calculated almost identically in these two scenarios.</p>
-<p>Let's write a &quot;layer&quot; class that generalizes this concept.</p>
+<p>Let's take a 10,000 ft view of everything we just learned. We should look for the similar pieces in linear regression, logistic classification, and neural nets.</p>
 </div>
-<div class="section" id="layer">
-<h2>Layer</h2>
+<div class="section" id="things-we-have-learned">
+<h2>Things we have learned</h2>
+<ol class="arabic simple">
+<li>The concept of a &quot;layer&quot;, which is just a matrix and a function, is at the core of all the models we have build thus far. Normally we have some input to a layer $X$, and we dot it with the layer's internal function $W$. Then we apply our internal function to that remaining quantity ($f(X \cdot W$), and pass that on. Let's refer to this $f$ as the &quot;matrix_func&quot;.</li>
+<li>Every error function, and matrix_func needs to be stored with it's derivative, because that is needed for the <em>backward</em> pass of partials. The function itself is need for the <em>forward</em> pass.</li>
+<li>Instead of recomputing $X \cdot W$ again on the <em>backward</em> (needed for $f^{'}(X \cdot W)$) pass of our partials, this quantity can be stored on the forward pass (saving us time), and then reused.</li>
+</ol>
+<p>4. We need to save the input $X$, because we need it for our calculation of the <strong>North Partial</strong>. We already save the matrix $W$, so we got the <strong>West Partial</strong> covered.
+Layer
+-----</p>
+<p>Let's flesh out this idea more. This is what a layer should feel like</p>
 <div class="highlight"><pre><span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Identity</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Identity</span><span class="p">):</span>
+    <span class="o">...</span>
 
-  <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
-      <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span>
-      <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span>
-      <span class="n">size</span> <span class="o">=</span> <span class="n">dim</span>
-    <span class="p">))</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+  <span class="c"># Feed X through my layer (and generate output)</span>
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="o">...</span>
 
-  <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
-      <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span>
-      <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span>
-      <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="p">))</span>
+  <span class="c"># given partials, compute the partials for our weight matrix</span>
+  <span class="k">def</span> <span class="nf">north_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+    <span class="o">...</span>
 
-  <span class="k">else</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+  <span class="c"># Given partials, compute the partials west of me</span>
+  <span class="k">def</span> <span class="nf">west_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+    <span class="o">...</span>
 
-  <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span> <span class="o">=</span> <span class="n">matrix_func</span>
+  <span class="c"># Some toString method</span>
+  <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="o">...</span>
 </pre></div>
-<p>This is a generalized version of what we have above. The &quot;matrix_func&quot; represents the function that we apply to each element of our matrix after we have dotted it with $W$, and added the intercept.</p>
-<p>So, a linear layer of size (2,2), and a logistic layer would be created like this, respectively</p>
-<div class="highlight"><pre><span class="n">linear_layer</span> <span class="o">=</span> <span class="n">Layer</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Identity</span><span class="p">)</span>
+<p>Now the &quot;matrix_func&quot; represents the function that we apply to each element of our matrix after we have dotted it with $W$, and added our intercept, $b$.</p>
+<p>If we have this as our layer, we can create a linear layer (used in a linear regression), or a sigmoid layer (used in logistic classification) as follows</p>
+<div class="highlight"><pre><span class="n">linear_layer</span> <span class="o">=</span> <span class="n">Layer</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">matrix_func</span><span class="o">=</span><span class="n">Identity</span><span class="p">)</span>
 <span class="n">logistic_layer</span> <span class="o">=</span> <span class="n">Layer</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">matrix_func</span><span class="o">=</span><span class="n">Sig</span><span class="p">)</span>
 </pre></div>
-<p>We also know that the propogation of our partial derivatives is very similar in these cases too</p>
+<p>Let's take these functions one by one</p>
 </div>
-<div class="section" id="partial-north">
-<h2>Partial North</h2>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">backward_north</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
-  <span class="n">partials</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
-  <span class="n">W_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">partials</span><span class="p">)</span>
-  <span class="n">b_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">partials</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-  <span class="k">return</span> <span class="p">(</span><span class="n">W_partial</span><span class="p">,</span> <span class="n">b_partial</span><span class="p">)</span>
+<div class="section" id="constructor">
+<h2>Constructor</h2>
+<div class="highlight"><pre>  if W is None:
+    a = 1. / dim[0]
+    self.W = np.array(np.random.uniform(
+      low = -a,
+      high = a,
+      size = dim
+    ))
+  else:
+    self.W = np.copy(W)
+
+  if b is None:
+    a = 1. / dim[0]
+    self.b = np.array(np.random.uniform(
+      low = -a,
+      high = a,
+      size = (1, dim[1])
+    ))
+
+  else:
+    self.b = np.copy(b)
+
+  self.matrix_func = matrix_func
 </pre></div>
-<p>It's easy to see that we need the gradient of our matrix_func, for this backward step. Remember for example, our Logistic Classification. In it, we need to multiply by $y_{ij}*(1-y_{ij})$. That is the derivative of our Sig function applied to our linear output.</p>
-<p>So this makes us aware of three things.</p>
-<ol class="arabic simple">
-<li>Basically, every error function, and matrix func needs to be stored with both the original function for the <em>forward</em> pass, and the derivative needed for the <em>backward</em> pass of partials.</li>
-<li>We need to save the linear output, on the <em>forward</em> pass, because we need to multiply the partials by our chain ruled matrix_func derivative.</li>
-<li>We need to save the input <em>X</em>, because we need it to calculate $\dfrac{dJ}{dW} = X^{T} \cdot \dfrac{dJ}{dY}$, on the <em>backward</em> pass.</li>
-</ol>
+<p>This just sets up our matrix $W$, and $b$, and saves our matrix_func accordingly. To reiteratie, Nothing super special here.</p>
 </div>
 <div class="section" id="forward">
 <h2>Forward</h2>
 <div class="highlight"><pre><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
   <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
   <span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
-  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
 </pre></div>
-<p>Moreover whenever we have a model, that has more than one layer (or internal matrix/func combo), we need to be able to propogate the partials back to them.</p>
-<p>In the first post I alluded to the fact that we need to calculate $\dfrac{dJ}{dX}$. We need this value so that we can then use our <em>partial north</em> to compute the matrix of partials for our other internal matrices. Consider the following picture with two internal matrices.</p>
-<p>[image with matrices]</p>
+<p>We remember to store the linear output of this layer, so that we can use that later on the backward pass.</p>
 </div>
-<div class="section" id="derivative">
-<h2>Derivative</h2>
-<p>Let's pretend for a moment, that we had a model where $X$ was filled with variables that we could change, and $W$ was filled with things that we couldn't.</p>
-<p>Let's compute</p>
-<p>$$\dfrac{dJ}{dx_{ab}} = stuff $$</p>
-<p>which implies that
-$$\dfrac{dJ}{dX} = \dfrac{dJ}{dY} \cdot W^{T}$$</p>
-<p>Fix that.</p>
-<p>I like to call that the <strong>partial west</strong> (because we are moving the partials west in our model). Moreover, I like to call the other calculation the <strong>partial north</strong> because it moves a partial up one matrix in our model. That calculation looks like</p>
-<p>$$\dfrac{dJ}{dW} = X^{T} \cdot \dfrac{dJ}{dY}$$</p>
-<p>It's pretty amazing that from these two things, you can make models as arbitrarily large as you want. As you can see, the pushing of the partials recurses on itself as you move it westward.</p>
-<p>Here I add one more function to our layer</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">backward_west</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
-  <span class="n">partials</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+<div class="section" id="north-partial">
+<h2>North Partial</h2>
+<p>These both just follow from the equations that we derived in the last post. We use the trick used here [link] to create the partials for our intercept $b$.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">north_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+  <span class="n">W_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">partials</span><span class="p">)</span>
+  <span class="n">b_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">partials</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">return</span> <span class="p">(</span><span class="n">W_partial</span><span class="p">,</span> <span class="n">b_partial</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="west-partial">
+<h2>West Partial</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">west_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
   <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">partials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
-<p>If these pictures don't make sense, take a look at the beginning of this blog</p>
-<p>[linear regression link]</p>
-<p>We see that every model has this same sort of structure. Namely</p>
+<p>This was derived last post.</p>
+<p>Now it is time to make the Neural Network which is just the combination of layers that we have created above.</p>
+</div>
+<div class="section" id="neural-network">
+<h2>Neural Network</h2>
+<p>To me a Neural Network is just a collection
+Now, obviously the first question is what should we pass to this thing. Now obviously we could spell out the dimensions of every layer inside but that would be verbose (especially considering the fact that they &quot;connect&quot; together).</p>
+<p>So what exactly do we need? Well we really only need to specify the x dimension of the matrix in the layer. This is because the y dimension is completely determined by the previous layer's $x$ dimension. Moreover, we can separate the out the dimension from the input. In my mind a &quot;layer&quot; has an an internal matrix and function. It stands to reason then that the size of the input into the whole function is not a layer. Let's consider the following picture.</p>
+<p>[picture</p>
+<p>labelled input dimension
+]</p>
+<p>So let's say we wanted a neural net to do linear regression on the Boston housing data set. The instantiation would look like this.</p>
+<div class="highlight"><pre><span class="n">N</span> <span class="o">=</span> <span class="n">NN</span><span class="p">(</span><span class="n">input_dim</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span> <span class="n">layer_list</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Identity</span><span class="p">)],</span> <span class="n">error_func</span><span class="o">=</span><span class="n">SquaredError</span><span class="p">)</span>
+</pre></div>
+<p>If we wanted to create a logistic classification (say for the Iris dataset), then we could write</p>
+<div class="highlight"><pre><span class="n">N</span> <span class="o">=</span> <span class="n">NN</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">layer_list</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">3</span><span class="p">,</span> <span class="n">Sig</span><span class="p">)],</span> <span class="n">error_func</span> <span class="o">=</span> <span class="n">CrossEntropyError</span><span class="p">)</span>
+</pre></div>
+<p>But let's say we wanted to add another internal matrix to the mix. Then we could do.</p>
+<div class="highlight"><pre><span class="n">N</span> <span class="o">=</span> <span class="n">NN</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">layer_list</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Identity</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">Sig</span><span class="p">)],</span> <span class="n">error_func</span> <span class="o">=</span> <span class="n">CrossEntropyError</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="neural-net">
+<h2>Neural Net</h2>
+<p>We are going to implement the standard scikit-learn function calls for this Estimator</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Network</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">layer_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;R&#39;</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+  <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+  <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+  <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+  <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+  <span class="o">...</span>
+</pre></div>
+<p>Let's take easiest to hardest</p>
+</div>
+<div class="section" id="predict">
+<h2>Predict</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+  <span class="n">current_results</span> <span class="o">=</span> <span class="n">X</span>
+  <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+    <span class="n">current_results</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">current_results</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">current_results</span>
+</pre></div>
+<p>We just call the forward function for each layer.</p>
+</div>
+<div class="section" id="error">
+<h2>Error</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+  <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+</pre></div>
+<p>Exact same pattern as before. Get the output, and then call your error function on it.</p>
+</div>
+<div class="section" id="id1">
+<h2>Constructor</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">layer_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;R&#39;</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">lr</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
+
+  <span class="c"># Classification problem</span>
+  <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span> <span class="o">=</span> <span class="n">CrossEntropyError</span>
+  <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s">&#39;R&#39;</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span> <span class="o">=</span> <span class="n">SquaredError</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="s">&quot;Unsupported type. &#39;C&#39; (for classification) or &#39;R&#39; for regression&quot;</span>
+
+  <span class="k">if</span> <span class="n">layer_list</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">init_layer_list</span><span class="p">(</span><span class="n">layer_list</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">init_layer_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_list</span><span class="p">):</span>
+  <span class="c"># Split up the dimensions and matrix_funcs</span>
+  <span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">matrix_funcs</span><span class="p">)</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">layer_list</span><span class="p">)</span>
+  <span class="n">dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
+  <span class="n">dims</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span><span class="p">)</span>
+
+  <span class="c"># Make matrix dimensions</span>
+  <span class="n">dims</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dims</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+  <span class="c"># Make matrix_funcs</span>
+  <span class="n">matrix_funcs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">mapping</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">matrix_funcs</span><span class="p">)</span>
+
+  <span class="c"># Zip &#39;em back together</span>
+  <span class="n">args</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">matrix_funcs</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">matrix_func</span><span class="p">)</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">Layer</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span><span class="p">,</span> <span class="n">matrix_func</span> <span class="o">=</span> <span class="n">matrix_func</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+</pre></div>
+<p>And here we talk about the decisions we made above (fix)</p>
+<p>And last but finally not least, we write our backprop function (unassumingly called update)</p>
+</div>
+<div class="section" id="update">
+<h2>Update</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+  <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+  <span class="n">cur_partial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">T</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lr</span>
+  <span class="n">rev_layers</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">rev_layers</span><span class="p">:</span>
+
+    <span class="c"># Chain rule through our matrix_func</span>
+    <span class="n">cur_partial</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix_func</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_output</span><span class="p">)</span>
+
+    <span class="c">#Compute the partial north, and west</span>
+    <span class="p">(</span><span class="n">W_partial</span><span class="p">,</span> <span class="n">b_partial</span><span class="p">)</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">north_partial</span><span class="p">(</span><span class="n">cur_partial</span><span class="p">)</span>
+    <span class="n">cur_partial</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">west_partial</span><span class="p">(</span><span class="n">cur_partial</span><span class="p">)</span>
+
+    <span class="c"># Update matrix and intercept</span>
+    <span class="n">layer</span><span class="o">.</span><span class="n">W</span> <span class="o">-=</span> <span class="n">W_partial</span>
+    <span class="n">layer</span><span class="o">.</span><span class="n">b</span> <span class="o">-=</span> <span class="n">b_partial</span>
+</pre></div>
+<p>Woah! Very nice and perdy. This also works for a generic $n$ levels. You can contrast that with the backprop from last post (which only works for 2 internal matrices).</p>
+</div>
+<div class="section" id="fit">
+<h2>Fit</h2>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
+
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+      <span class="k">print</span> <span class="s">&quot;Error: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+<p>We also know that the propagation of our partial derivatives is very similar in these cases too</p>
+<p>It's easy to see that we need the gradient of our matrix_func, for this backward step. Remember for example, our Logistic Classification. In it, we need to multiply by $y_{ij}*(1-y_{ij})$. That is the derivative of our Sig function applied to our linear output.</p>
 </div>
 </div>
     <footer>
