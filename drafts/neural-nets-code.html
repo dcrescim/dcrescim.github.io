@@ -75,11 +75,32 @@
 <div class="section" id="things-we-have-learned">
 <h2>Things we have learned</h2>
 <ol class="arabic simple">
-<li>The concept of a &quot;layer&quot;, which is just a matrix and a function, is at the core of all the models we have built thus far. Normally we have some input to a layer $X$, and we dot it with the layer's internal function $W$, and add the intercept $b$. Then we apply our internal function to that remaining quantity ($f(X \cdot W + b$), and pass that on. Let's refer to this $f$ as the &quot;matrix_func&quot;.</li>
-<li>Every error function, and matrix_func needs to be stored with it's derivative, because that is needed for the <em>backward</em> pass of partials. The function itself is need for the <em>forward</em> pass.</li>
-<li>Instead of recomputing $X \cdot W$ again on the <em>backward</em> pass of our partials (needed for $f^{'}(X \cdot W + b)$), we can store this quantity on the forward pass, and then reuse that computation.</li>
-<li>We need to save the input $X$, because we need it for our calculation of the <strong>North Partial</strong>. We already save the matrix $W$, so we got the <strong>West Partial</strong> covered.</li>
+<li>The concept of a &quot;layer&quot;, which is just a matrix and a function, is at the core of all the models we have built thus far. Normally we have some input to a layer $X$, and we dot it with the layer's internal function $W$. Then we apply our internal function to that remaining quantity , $f(X \cdot W$), and pass that on. Let's refer to this $f$ as the &quot;matrix_func&quot;.</li>
+<li>Every error function, and matrix_func needs to be stored with it's derivative, because that is needed for the <strong>backward</strong> pass of partials. The function itself is need for the <strong>forward</strong> pass.</li>
 </ol>
+<p>We also learned about the</p>
+</div>
+<div class="section" id="north-partial-and-west-partial">
+<h2>North Partial and West Partial</h2>
+<p>Here we are assuming $Y = f(X \cdot W)$</p>
+<div class="section" id="generalized-north-partial">
+<h3>Generalized North Partial</h3>
+<p>$$\dfrac{dJ}{dW} = X^{T} \cdot \left(\dfrac{dJ}{dY} * f^{'}(X \cdot W)\right)$$</p>
+</div>
+<div class="section" id="generalized-west-partial">
+<h3>Generalized West Partial</h3>
+<p>$$\dfrac{dJ}{dX} = \left(\dfrac{dJ}{dY} * f^{'}(X \cdot W)\right) \cdot W^{T}$$</p>
+<p>Note that $\cdot$ is the dot product, and $*$ is an element-wise multiplication. Big difference.</p>
+</div>
+</div>
+<div class="section" id="things-to-note">
+<h2>Things to note</h2>
+<ol class="arabic simple">
+<li>If you look at the equations above, you can begin to see overlapping computations. For example we use the result $X \cdot W$, in both of those expressions. But we have to create this value when we are going <strong>forward</strong> through the model. Might as well save it, and reuse it on the backward pass.</li>
+<li>We should also save the value of the input $X$. We need that for our calculation of the <strong>North Partial</strong>. We already save the matrix $W$, so we got the <strong>West Partial</strong> covered.</li>
+<li>The expression $\dfrac{dJ}{dY} * f^{'}(X \cdot W)$ need only be calculated once. From there we can pass it into the non-generalized versions of our <strong>North Partial</strong> and <strong>West Partial</strong>. I'll explain that last one more below.</li>
+</ol>
+<p>Alright, first things first.</p>
 </div>
 <div class="section" id="layer">
 <h2>Layer</h2>
@@ -152,7 +173,7 @@
 </div>
 <div class="section" id="north-partial">
 <h2>North Partial</h2>
-<p>These both just follow from the equations that we derived in the last post. We use the trick used here [link] to create the partials for our intercept $b$.</p>
+<p>These both just follow from the equations that we derived in the last post. We use the trick shown <a class="reference external" href="/linear-regression-code-pt-2.html">here</a>. to create the partials for our intercept $b$.</p>
 <div class="highlight"><pre><span class="k">def</span> <span class="nf">north_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
   <span class="n">W_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">partials</span><span class="p">)</span>
   <span class="n">b_partial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">partials</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -164,14 +185,13 @@
 <div class="highlight"><pre><span class="k">def</span> <span class="nf">west_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
   <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">partials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
-<p>This was derived last post.</p>
-<p>Now it is time to make the Neural Network which is just the combination of layers that we have created above.</p>
+<p>These were derived last post.</p>
+<p>Now it is time to make the Neural Net itself.</p>
 </div>
 <div class="section" id="neural-network">
 <h2>Neural Network</h2>
-<p>To me a Neural Network is just a collection
-Now, obviously the first question is what should we pass to this thing. Now obviously we could spell out the dimensions of every layer inside but that would be verbose (especially considering the fact that they &quot;connect&quot; together).</p>
-<p>So what exactly do we need? Well we really only need to specify the x dimension of the matrix in the layer. This is because the y dimension is completely determined by the previous layer's $x$ dimension. Moreover, we can separate the out the dimension from the input. In my mind a &quot;layer&quot; has an an internal matrix and function. It stands to reason then that the size of the input into the whole function is not a layer. Let's consider the following picture.</p>
+<p>To me a Neural Network is just a collection of the layers above. Now, in the constructor, we could obviously spell out the dimensions of every internal layer, I think we can agree that would be a tad verbose. Moreover, it is not clear that the dimensions passed in would &quot;fit together&quot; in the way that they should. So what can we do here?</p>
+<p>Well we really only need to specify the x dimension of the internal matrix of every layer. This is true because the y dimension is completely determined by the previous layer's $x$ dimension. Moreover, we can separate the out the dimension from the input. In my mind a &quot;layer&quot; has an an internal matrix and function. It stands to reason then that the size of the input into the whole function is not a layer. Let's consider the following picture.</p>
 <p>[picture</p>
 <p>labelled input dimension
 ]</p>
@@ -315,6 +335,9 @@ Now, obviously the first question is what should we pass to this thing. Now obvi
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="/building-outwards-towards-neural-nets.html">Building outwards towards Neural Nets</a>
+      </li>
+      <li class="post">
           <a href="/logistic-classification-code.html">Logistic Classification Code</a>
       </li>
       <li class="post">
@@ -325,9 +348,6 @@ Now, obviously the first question is what should we pass to this thing. Now obvi
       </li>
       <li class="post">
           <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
-      </li>
-      <li class="post">
-          <a href="/linear-regression.html">Linear Regression</a>
       </li>
     </ul>
   </section>
@@ -359,6 +379,9 @@ Now, obviously the first question is what should we pass to this thing. Now obvi
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
+          <a href="/building-outwards-towards-neural-nets.html">Building outwards towards Neural Nets</a>
+      </li>
+      <li class="post">
           <a href="/logistic-classification-code.html">Logistic Classification Code</a>
       </li>
       <li class="post">
@@ -369,9 +392,6 @@ Now, obviously the first question is what should we pass to this thing. Now obvi
       </li>
       <li class="post">
           <a href="/linear-regression-code-pt-1.html">Linear Regression Code pt 1</a>
-      </li>
-      <li class="post">
-          <a href="/linear-regression.html">Linear Regression</a>
       </li>
     </ul>
   </section>
